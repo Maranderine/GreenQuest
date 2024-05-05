@@ -10,8 +10,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
 import de.hsb.greenquest.ui.Camera.CameraPreviewScreen
@@ -24,11 +22,10 @@ class MainActivity : ComponentActivity() {
             if (isGranted) {
                 setCameraPreview()
             } else {
-                // Camera permission denied
+                // No permission
             }
 
         }
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,14 +55,6 @@ class MainActivity : ComponentActivity() {
                     CameraPreviewScreen()
                 }
     }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
 }
 }
 }
