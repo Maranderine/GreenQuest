@@ -52,10 +52,9 @@ public class ApiTest {
     }
 
     private static void sendHttpGETRequest() throws IOException {
-        URL obj = new URL(POST_URL);
+        URL obj = new URL(GET_URL);
         HttpURLConnection httpURLConnection = (HttpURLConnection) obj.openConnection();
         httpURLConnection.setRequestMethod("GET");
-        httpURLConnection.setRequestProperty("api-key", APIKEY);
         System.out.println(httpURLConnection.getURL());
         int responseCode = httpURLConnection.getResponseCode();
         System.out.println("GET Response Code :: " + responseCode);
