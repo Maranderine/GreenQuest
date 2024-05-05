@@ -22,7 +22,7 @@ class MainActivity : ComponentActivity() {
             if (isGranted) {
                 setCameraPreview()
             } else {
-                // No permission
+                //this.finish() //TODO
             }
 
         }
