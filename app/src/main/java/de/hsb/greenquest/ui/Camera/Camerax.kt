@@ -2,8 +2,12 @@ package de.hsb.greenquest.ui.Camera
 
 import android.content.ContentValues
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Matrix
 import android.os.Build
 import android.provider.MediaStore
+import android.widget.ImageView
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
@@ -16,7 +20,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -25,6 +32,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
+
 
 @Composable
 fun CameraPreviewScreen() {
@@ -39,20 +47,70 @@ fun CameraPreviewScreen() {
     val imageCapture = remember {
         ImageCapture.Builder().build()
     }
+    var isCameraOpen by remember { mutableStateOf(true) } // Track if the camera is open
+    var capturedImagePath by remember { mutableStateOf<String?>(null) } // Track the captured image path
+
     LaunchedEffect(lensFacing) {
         val cameraProvider = context.getCameraProvider()
         cameraProvider.unbindAll()
         cameraProvider.bindToLifecycle(lifecycleOwner, cameraxSelector, preview, imageCapture)
         preview.setSurfaceProvider(previewView.surfaceProvider)
     }
+
     Box(contentAlignment = Alignment.BottomCenter, modifier = Modifier.fillMaxSize()) {
-        AndroidView({ previewView }, modifier = Modifier.fillMaxSize())
-        Button(onClick = { captureImage(imageCapture, context) }) {
-            Text(text = "Capture Image")
+        if (isCameraOpen) {
+            AndroidView({ previewView }, modifier = Modifier.fillMaxSize())
+            Button(onClick = {
+                captureImage(imageCapture, context) { imagePath ->
+                    capturedImagePath = imagePath
+                    isCameraOpen = false // Close the camera after capturing the image
+                }
+            }) {
+                Text(text = "Capture Image")
+            }
+        } else {
+            // Display the captured image
+            capturedImagePath?.let { imagePath ->
+                val imageView = ImageView(context)
+                displayImage(imageView, imagePath)
+                AndroidView({ imageView }, modifier = Modifier.fillMaxSize())
+            }
         }
     }
 }
-private fun captureImage(imageCapture: ImageCapture, context: Context) {
+
+private fun displayImage(imageView: ImageView, filePath: String) {
+    // Decode the bitmap from the file
+    val bitmap = BitmapFactory.decodeFile(filePath)
+
+    // Check if the image needs to be rotated
+    val rotationDegrees = getImageRotation(filePath)
+
+    // Rotate the bitmap if needed
+    val rotatedBitmap = if (rotationDegrees != 0) {
+        rotateBitmap(bitmap, rotationDegrees.toFloat())
+    } else {
+        bitmap // No rotation needed
+    }
+
+    // Set the rotated bitmap to the ImageView
+    imageView.setImageBitmap(rotatedBitmap)
+}
+
+private fun getImageRotation(filePath: String): Int {
+    // Add logic to determine the rotation angle based on image EXIF data or other metadata
+    // For simplicity, let's assume the image needs to be rotated 90 degrees clockwise
+    // You may need to implement more complex logic to handle different rotation scenarios
+    return 90
+}
+
+private fun rotateBitmap(bitmap: Bitmap, degrees: Float): Bitmap {
+    val matrix = Matrix().apply { postRotate(degrees) }
+    return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+}
+
+
+private fun captureImage(imageCapture: ImageCapture, context: Context, onImageCaptured: (String) -> Unit) {
     val name = "CameraxImage.jpeg"
     val contentValues = ContentValues().apply {
         put(MediaStore.MediaColumns.DISPLAY_NAME, name)
@@ -73,16 +131,33 @@ private fun captureImage(imageCapture: ImageCapture, context: Context) {
         ContextCompat.getMainExecutor(context),
         object : ImageCapture.OnImageSavedCallback {
             override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                println("Successs")
+                // Get the most recent image added to the MediaStore
+                val cursor = context.contentResolver.query(
+                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                    arrayOf(MediaStore.Images.Media.DATA),
+                    null,
+                    null,
+                    "${MediaStore.Images.Media.DATE_ADDED} DESC",
+                    null
+                )
+                cursor?.use { cursor ->
+                    val dataColumnIndex = cursor.getColumnIndex(MediaStore.Images.Media.DATA)
+                    if (dataColumnIndex != -1 && cursor.moveToFirst()) {
+                        val filePath = cursor.getString(dataColumnIndex)
+                        println("Image saved successfully at $filePath")
+                        onImageCaptured(filePath) // Call the callback with the correct file path
+                    } else {
+                        println("Unable to retrieve file path.")
+                    }
+                }
             }
+
 
             override fun onError(exception: ImageCaptureException) {
                 println("Failed $exception")
             }
-
         })
 }
-
 
 private suspend fun Context.getCameraProvider(): ProcessCameraProvider =
     suspendCoroutine { continuation ->
