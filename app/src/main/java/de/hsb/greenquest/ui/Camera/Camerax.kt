@@ -84,7 +84,7 @@ private fun displayImage(imageView: ImageView, filePath: String) {
     val bitmap = BitmapFactory.decodeFile(filePath)
 
     // Check if the image needs to be rotated
-    val rotationDegrees = getImageRotation(filePath)
+    val rotationDegrees = 90
 
     // Rotate the bitmap if needed
     val rotatedBitmap = if (rotationDegrees != 0) {
@@ -96,14 +96,6 @@ private fun displayImage(imageView: ImageView, filePath: String) {
     // Set the rotated bitmap to the ImageView
     imageView.setImageBitmap(rotatedBitmap)
 }
-
-private fun getImageRotation(filePath: String): Int {
-    // Add logic to determine the rotation angle based on image EXIF data or other metadata
-    // For simplicity, let's assume the image needs to be rotated 90 degrees clockwise
-    // You may need to implement more complex logic to handle different rotation scenarios
-    return 90
-}
-
 private fun rotateBitmap(bitmap: Bitmap, degrees: Float): Bitmap {
     val matrix = Matrix().apply { postRotate(degrees) }
     return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
