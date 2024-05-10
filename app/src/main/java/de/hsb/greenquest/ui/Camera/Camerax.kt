@@ -15,7 +15,10 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -73,7 +76,24 @@ fun CameraPreviewScreen() {
             capturedImagePath?.let { imagePath ->
                 val imageView = ImageView(context)
                 displayImage(imageView, imagePath)
-                AndroidView({ imageView }, modifier = Modifier.fillMaxSize())
+
+                AndroidView(
+                    { imageView },
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .fillMaxSize()
+                )
+                Row(
+                    modifier = Modifier.align(Alignment.BottomCenter)
+                ) {
+                    Button(onClick = { /*TODO*/ }) {
+                        Text(text = "HI")
+                    }
+
+                    Button(onClick = { /*TODO*/ }) {
+                        Text(text = "HI")
+                    }
+                }
             }
         }
     }
