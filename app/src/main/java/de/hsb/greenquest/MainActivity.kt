@@ -17,7 +17,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import de.hsb.greenquest.ui.navigation.BottomNavigationBar
 import de.hsb.greenquest.ui.navigation.Screen
-import de.hsb.greenquest.ui.screen.CategorieScreen
+import de.hsb.greenquest.ui.screen.CategoryScreen
 import de.hsb.greenquest.ui.screen.PortfolioScreen
 import de.hsb.greenquest.ui.theme.GreenQuestTheme
 
@@ -46,7 +46,7 @@ class MainActivity : ComponentActivity() {
                                 PortfolioScreen(navController = navController)
                             }
                             composable(route = Screen.PortfolioCategoryScreen.route) {
-                                CategorieScreen(navController = navController)
+                                CategoryScreen(navController = navController)
                             }
                         }
                     }

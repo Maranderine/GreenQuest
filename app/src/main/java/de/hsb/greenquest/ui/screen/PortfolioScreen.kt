@@ -25,11 +25,13 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import de.hsb.greenquest.R
 import de.hsb.greenquest.ui.navigation.Screen
 import de.hsb.greenquest.ui.theme.spacing
+import de.hsb.greenquest.ui.viewmodel.PortfolioViewModel
 
 @Composable
 fun PortfolioScreen(navController: NavController) {
@@ -38,23 +40,25 @@ fun PortfolioScreen(navController: NavController) {
             .padding(MaterialTheme.spacing.small)
             .fillMaxSize()
     ) {
+        val portfolioViewModel = viewModel<PortfolioViewModel>()
 
-        var test = mutableListOf<String>(
-            "Rose",
-            "Sunflower",
-            "Cannabis",
-            "Cat",
-            "Dog"
-        )
 
         //PortfolioCategory(title = "Recent", names = test)
-        PortfolioCategory(title = "Recent", names = test, navController = navController)
-        PortfolioCategory(title = "Favorite", names = test, navController = navController)
+
+        portfolioViewModel.categories.forEach { categoryName ->
+            PortfolioCategory(
+                title = categoryName,
+                navController = navController,
+                portfolioViewModel = portfolioViewModel
+            )
+        }
+
+
     }
 }
 
 @Composable
-fun PortfolioCategory(title: String, names: List<String>, navController: NavController) {
+fun PortfolioCategory(title: String, navController: NavController, portfolioViewModel: PortfolioViewModel) {
     Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
     Text(
         text = title,
@@ -63,11 +67,10 @@ fun PortfolioCategory(title: String, names: List<String>, navController: NavCont
             .clickable {
                 navController.navigate(Screen.PortfolioCategoryScreen.route)
             }
-
     )
     LazyRow {
-        items(names.size) { index ->
-            PortfolioElement(names[index])
+        items(portfolioViewModel.flowerNames.size) { index ->
+            PortfolioElement(portfolioViewModel.flowerNames[index])
         }
     }
 }

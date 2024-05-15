@@ -14,13 +14,11 @@ import androidx.navigation.NavController
 import de.hsb.greenquest.ui.theme.spacing
 
 @Composable
-fun CategorieScreen(
+fun CategoryScreen(
     navController: NavController,
     title: String = "",
     names: List<String> = listOf()
 ) {
-    val categories = listOf<String>("Recent", "Favorite")
-
     Column(
         verticalArrangement = Arrangement.Center,
     ) {
