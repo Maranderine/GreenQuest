@@ -32,12 +32,13 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import java.io.File
+import androidx.navigation.NavController
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 
 @Composable
-fun CameraPreviewScreen() {
+fun CameraPreviewScreen(navController: NavController) {
     val lensFacing = CameraSelector.LENS_FACING_BACK
     val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current

@@ -8,9 +8,19 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import de.hsb.greenquest.ui.navigation.BottomNavigationBar
+import de.hsb.greenquest.ui.navigation.Screen
+import de.hsb.greenquest.ui.screen.CategoryScreen
+import de.hsb.greenquest.ui.screen.PortfolioScreen
 import androidx.core.content.ContextCompat
 import de.hsb.greenquest.ui.Camera.CameraPreviewScreen
 import de.hsb.greenquest.ui.theme.GreenQuestTheme
@@ -28,7 +38,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         // Request camera and storage permissions
         val cameraPermission = Manifest.permission.CAMERA
         val storagePermission = Manifest.permission.READ_MEDIA_IMAGES
@@ -65,9 +74,31 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    CameraPreviewScreen()
+                    val navController = rememberNavController()
+                    Scaffold(
+                        bottomBar = {
+                            BottomNavigationBar(navController = navController)
+                        },
+                        floatingActionButton = {
+
+                        },
+                    ) {
+                        innerPadding ->
+                        NavHost(navController = navController, startDestination = Screen.PortfolioScreen.route, Modifier.padding(innerPadding)) {
+                            composable(route = Screen.PortfolioScreen.route) {
+                                PortfolioScreen(navController = navController)
+                            }
+                            composable(route = Screen.PortfolioCategoryScreen.route) {
+                                CategoryScreen(navController = navController)
+                            }
+                            composable(route = Screen.CameraScreen.route) {
+                                CameraPreviewScreen(navController = navController)
+                            }
+                        }
+                    }
                 }
+            }
+        }
     }
-}
-}
+
 }
