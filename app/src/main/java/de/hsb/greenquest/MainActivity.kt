@@ -17,31 +17,44 @@ import de.hsb.greenquest.ui.theme.GreenQuestTheme
 
 class MainActivity : ComponentActivity() {
 
-    private val cameraPermissionRequest =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-            if (isGranted) {
-                setCameraPreview()
-            } else {
-                //this.finish() //TODO
-            }
-
+    private val requestPermissionsLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+        val allPermissionsGranted = permissions.all { it.value }
+        if (allPermissionsGranted) {
+            setCameraPreview()
+        } else {
+            // Handle permission denial
         }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        when (PackageManager.PERMISSION_GRANTED) {
-            ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.CAMERA
-            ) -> {
-                setCameraPreview()
-            }
-            else -> {
-                cameraPermissionRequest.launch(Manifest.permission.CAMERA)
-            }
-        }
 
+        // Request camera and storage permissions
+        val cameraPermission = Manifest.permission.CAMERA
+        val storagePermission = Manifest.permission.READ_MEDIA_IMAGES
+
+        val hasCameraPermission = ContextCompat.checkSelfPermission(this, cameraPermission) == PackageManager.PERMISSION_GRANTED
+        val hasStoragePermission = ContextCompat.checkSelfPermission(this, storagePermission) == PackageManager.PERMISSION_GRANTED
+
+        if (hasCameraPermission && hasStoragePermission) {
+            // Both permissions are already granted
+            setCameraPreview()
+        } else {
+            // Request permissions
+            val permissionsToRequest = mutableListOf<String>()
+            if (!hasCameraPermission) {
+                permissionsToRequest.add(cameraPermission)
+            }
+            if (!hasStoragePermission) {
+                permissionsToRequest.add(storagePermission)
+            }
+
+            requestPermissionsLauncher.launch(permissionsToRequest.toTypedArray())
+        }
     }
+
+
+
 
 
     private fun setCameraPreview() {

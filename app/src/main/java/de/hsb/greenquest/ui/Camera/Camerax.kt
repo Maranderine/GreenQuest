@@ -15,10 +15,8 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,6 +31,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import java.io.File
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -50,6 +49,10 @@ fun CameraPreviewScreen() {
     val imageCapture = remember {
         ImageCapture.Builder().build()
     }
+
+    var shouldOpenCamera by remember { mutableStateOf(true) }
+
+
     var isCameraOpen by remember { mutableStateOf(true) } // Track if the camera is open
     var capturedImagePath by remember { mutableStateOf<String?>(null) } // Track the captured image path
 
@@ -86,8 +89,11 @@ fun CameraPreviewScreen() {
                 Row(
                     modifier = Modifier.align(Alignment.BottomCenter)
                 ) {
-                    Button(onClick = { /*TODO*/ }) {
-                        Text(text = "HI")
+                    Button(onClick = {
+                        deleteImage(imagePath)
+                        
+                    }) {
+                        Text(text = "Try Again")
                     }
 
                     Button(onClick = { /*TODO*/ }) {
@@ -98,6 +104,22 @@ fun CameraPreviewScreen() {
         }
     }
 }
+
+// Function to delete the image
+fun deleteImage(imagePath: String) {
+    val imageFile = File(imagePath)
+    if (imageFile.exists()) {
+        val deleted = imageFile.delete()
+        if (deleted) {
+            println("Image deleted successfully.")
+        } else {
+            println("Failed to delete the image.")
+        }
+    } else {
+        println("Image file not found.")
+    }
+}
+
 
 private fun displayImage(imageView: ImageView, filePath: String) {
     // Decode the bitmap from the file
