@@ -31,8 +31,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
-import java.io.File
 import androidx.navigation.NavController
+import de.hsb.greenquest.ui.navigation.Screen
+import java.io.File
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -50,9 +51,6 @@ fun CameraPreviewScreen(navController: NavController) {
     val imageCapture = remember {
         ImageCapture.Builder().build()
     }
-
-    var shouldOpenCamera by remember { mutableStateOf(true) }
-
 
     var isCameraOpen by remember { mutableStateOf(true) } // Track if the camera is open
     var capturedImagePath by remember { mutableStateOf<String?>(null) } // Track the captured image path
@@ -92,13 +90,17 @@ fun CameraPreviewScreen(navController: NavController) {
                 ) {
                     Button(onClick = {
                         deleteImage(imagePath)
-                        
+                        isCameraOpen = true
+                        navController.navigate(Screen.CameraScreen.route)
                     }) {
                         Text(text = "Try Again")
                     }
 
-                    Button(onClick = { /*TODO*/ }) {
-                        Text(text = "HI")
+                    Button(onClick = {
+                        //TODO API (imagePath)
+                        navController.navigate(Screen.PortfolioScreen.route)
+                    }) {
+                        Text(text = "Confirm")
                     }
                 }
             }
