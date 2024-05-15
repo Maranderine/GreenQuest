@@ -25,14 +25,14 @@ data class BottomNavigationItem(
 fun BottomNavigationBar(navController: NavController) {
     val items = listOf(
         BottomNavigationItem(
+            title = "Camera",
+            route = Screen.CameraScreen.route,
+            icon = Icons.Filled.Delete
+        ),
+        BottomNavigationItem(
             title = "Portfolio",
             route = Screen.PortfolioScreen.route,
             icon = Icons.Filled.Notifications
-        ),
-        BottomNavigationItem(
-            title = "Test",
-            route = Screen.PortfolioScreen.route,
-            icon = Icons.Filled.Delete
         ),
     )
     var selectedItemIndex by rememberSaveable() {
