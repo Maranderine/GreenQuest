@@ -8,8 +8,11 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import de.hsb.greenquest.data.local.GreenQuestDB
+import de.hsb.greenquest.data.local.dao.PlantPictureDao
 import de.hsb.greenquest.data.local.entity.PlantPictureEntity
 import de.hsb.greenquest.data.local.utils.DataBaseConstants.GREEN_QUEST_DATABASE
+import de.hsb.greenquest.data.repository.PlantPictureRepositoryImpl
+import de.hsb.greenquest.domain.repository.PlantPictureRepository
 import javax.inject.Singleton
 
 @Module
@@ -20,13 +23,19 @@ object AppModule {
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context) = Room.databaseBuilder(
         context, GreenQuestDB::class.java, GREEN_QUEST_DATABASE
-    ).allowMainThreadQueries().fallbackToDestructiveMigration().build()
+    ).fallbackToDestructiveMigration().build()
 
     @Provides
     @Singleton
-    fun providePlantEntityDao(db: GreenQuestDB) = db.plantPictureDao()
+    fun providePlantPictureDao(db: GreenQuestDB) = db.plantPictureDao()
 
     @Provides
     @Singleton
-    fun providePlantEntityEntity() = PlantPictureEntity()
+    fun providePlantPictureEntity() = PlantPictureEntity()
+
+    @Provides
+    @Singleton
+    fun providePlantPictureRepository(dao: PlantPictureDao): PlantPictureRepository {
+        return PlantPictureRepositoryImpl(dao)
+    }
 }

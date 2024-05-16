@@ -15,6 +15,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,10 +28,13 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import de.hsb.greenquest.R
+import de.hsb.greenquest.domain.model.Plant
 import de.hsb.greenquest.ui.navigation.Screen
 import de.hsb.greenquest.ui.theme.spacing
 import de.hsb.greenquest.ui.viewmodel.PortfolioViewModel
@@ -40,8 +46,8 @@ fun PortfolioScreen(navController: NavController) {
             .padding(MaterialTheme.spacing.small)
             .fillMaxSize()
     ) {
-        val portfolioViewModel = viewModel<PortfolioViewModel>()
 
+        val portfolioViewModel = hiltViewModel<PortfolioViewModel>()
 
         //PortfolioCategory(title = "Recent", names = test)
 
@@ -59,6 +65,8 @@ fun PortfolioScreen(navController: NavController) {
 
 @Composable
 fun PortfolioCategory(title: String, navController: NavController, portfolioViewModel: PortfolioViewModel) {
+    val plantList by portfolioViewModel.plantListFlow.collectAsStateWithLifecycle()
+
     Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
     Text(
         text = title,
@@ -69,14 +77,14 @@ fun PortfolioCategory(title: String, navController: NavController, portfolioView
             }
     )
     LazyRow {
-        items(portfolioViewModel.flowerNames.size) { index ->
-            PortfolioElement(portfolioViewModel.flowerNames[index])
+        items(plantList.size) { index ->
+            PortfolioElement(plantList[index])
         }
     }
 }
 
 @Composable
-fun PortfolioElement(plantName: String) {
+fun PortfolioElement(plant: Plant) {
     val context = LocalContext.current
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -92,12 +100,12 @@ fun PortfolioElement(plantName: String) {
                 .clip(RoundedCornerShape(30.dp))
                 .clickable {
                     Toast
-                        .makeText(context, plantName, Toast.LENGTH_SHORT)
+                        .makeText(context, plant.name, Toast.LENGTH_SHORT)
                         .show()
                 }
 
         )
-        Text(text = plantName)
+        Text(text = plant.name)
     }
 
 }

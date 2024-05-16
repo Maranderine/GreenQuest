@@ -25,7 +25,7 @@ fun CategoryScreen(
         Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
         LazyVerticalGrid(columns = GridCells.Adaptive(116.dp), content = {
             items(names.size) { index ->
-                PortfolioElement(names[index])
+                //PortfolioElement(names[index])
             }
         })
     }

@@ -22,13 +22,16 @@ import de.hsb.greenquest.ui.navigation.Screen
 import de.hsb.greenquest.ui.screen.CategoryScreen
 import de.hsb.greenquest.ui.screen.PortfolioScreen
 import androidx.core.content.ContextCompat
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import dagger.hilt.android.AndroidEntryPoint
 import de.hsb.greenquest.ui.Camera.CameraPreviewScreen
 import de.hsb.greenquest.ui.Camera.ImageGalleryApp
 import de.hsb.greenquest.ui.theme.GreenQuestTheme
+import de.hsb.greenquest.ui.viewmodel.PortfolioViewModel
+
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
     private val cameraPermissionRequest =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
             if (isGranted) {
