@@ -22,10 +22,11 @@ import de.hsb.greenquest.ui.navigation.Screen
 import de.hsb.greenquest.ui.screen.CategoryScreen
 import de.hsb.greenquest.ui.screen.PortfolioScreen
 import androidx.core.content.ContextCompat
+import dagger.hilt.android.AndroidEntryPoint
 import de.hsb.greenquest.ui.Camera.CameraPreviewScreen
 import de.hsb.greenquest.ui.Camera.ImageGalleryApp
 import de.hsb.greenquest.ui.theme.GreenQuestTheme
-
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     private val cameraPermissionRequest =
@@ -62,30 +63,30 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    ImageGalleryApp()
+//                    ImageGalleryApp()
 
-//                    val navController = rememberNavController()
-//                    Scaffold(
-//                        bottomBar = {
-//                            BottomNavigationBar(navController = navController)
-//                        },
-//                        floatingActionButton = {
-//
-//                        },
-//                    ) {
-//                        innerPadding ->
-//                        NavHost(navController = navController, startDestination = Screen.PortfolioScreen.route, Modifier.padding(innerPadding)) {
-//                            composable(route = Screen.PortfolioScreen.route) {
-//                                PortfolioScreen(navController = navController)
-//                            }
-//                            composable(route = Screen.PortfolioCategoryScreen.route) {
-//                                CategoryScreen(navController = navController)
-//                            }
-//                            composable(route = Screen.CameraScreen.route) {
-//                                CameraPreviewScreen(navController = navController)
-//                            }
-//                        }
-//                    }
+                    val navController = rememberNavController()
+                    Scaffold(
+                        bottomBar = {
+                            BottomNavigationBar(navController = navController)
+                        },
+                        floatingActionButton = {
+
+                        },
+                    ) {
+                        innerPadding ->
+                        NavHost(navController = navController, startDestination = Screen.PortfolioScreen.route, Modifier.padding(innerPadding)) {
+                            composable(route = Screen.PortfolioScreen.route) {
+                                PortfolioScreen(navController = navController)
+                            }
+                            composable(route = Screen.PortfolioCategoryScreen.route) {
+                                CategoryScreen(navController = navController)
+                            }
+                            composable(route = Screen.CameraScreen.route) {
+                                CameraPreviewScreen(navController = navController)
+                            }
+                        }
+                    }
 
                 }
             }
