@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.os.Build
 import android.provider.MediaStore
+import android.util.Log
 import android.widget.ImageView
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
@@ -103,7 +104,7 @@ fun CameraPreviewScreen(navController: NavController) {
 private fun displayImage(imageView: ImageView, filePath: String) {
     // Decode the bitmap from the file
     val bitmap = BitmapFactory.decodeFile(filePath)
-
+    Log.d("FILEPATH", filePath)
     // Check if the image needs to be rotated
     val rotationDegrees = 90
 
@@ -129,7 +130,7 @@ private fun captureImage(imageCapture: ImageCapture, context: Context, onImageCa
         put(MediaStore.MediaColumns.DISPLAY_NAME, name)
         put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
-            put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/CameraX-Image")
+            put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/GreenQuest")
         }
     }
     val outputOptions = ImageCapture.OutputFileOptions
@@ -158,6 +159,7 @@ private fun captureImage(imageCapture: ImageCapture, context: Context, onImageCa
                     if (dataColumnIndex != -1 && cursor.moveToFirst()) {
                         val filePath = cursor.getString(dataColumnIndex)
                         println("Image saved successfully at $filePath")
+                        Log.d("FILEPATH2", filePath)
                         onImageCaptured(filePath) // Call the callback with the correct file path
                     } else {
                         println("Unable to retrieve file path.")
