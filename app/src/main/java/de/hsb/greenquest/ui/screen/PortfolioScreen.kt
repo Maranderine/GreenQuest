@@ -33,6 +33,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.rememberAsyncImagePainter
 import de.hsb.greenquest.R
 import de.hsb.greenquest.domain.model.Plant
 import de.hsb.greenquest.ui.navigation.Screen
@@ -78,20 +79,25 @@ fun PortfolioCategory(title: String, navController: NavController, portfolioView
     )
     LazyRow {
         items(plantList.size) { index ->
-            PortfolioElement(plantList[index])
+            PortfolioElement(plant = plantList[index], title = title)
         }
     }
 }
 
 @Composable
-fun PortfolioElement(plant: Plant) {
+fun PortfolioElement(plant: Plant, title: String) {
     val context = LocalContext.current
+
+    if (title == "Favorite" && !plant.favorite) {
+        return
+    }
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
         Image(
-            painter = painterResource(id = R.drawable.plant),
+            painter = rememberAsyncImagePainter(model = plant.imagePath),
             contentDescription = "",
             contentScale = ContentScale.Crop,
             modifier = Modifier

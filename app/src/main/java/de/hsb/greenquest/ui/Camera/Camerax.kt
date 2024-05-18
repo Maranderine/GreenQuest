@@ -32,8 +32,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import de.hsb.greenquest.ui.navigation.Screen
+import de.hsb.greenquest.ui.viewmodel.CameraViewModel
 import java.io.File
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -41,6 +43,9 @@ import kotlin.coroutines.suspendCoroutine
 
 @Composable
 fun CameraPreviewScreen(navController: NavController) {
+
+    val cameraViewModel = hiltViewModel<CameraViewModel>()
+
     val lensFacing = CameraSelector.LENS_FACING_BACK
     val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
@@ -99,6 +104,7 @@ fun CameraPreviewScreen(navController: NavController) {
 
                     Button(onClick = {
                         //TODO API (imagePath)
+                        cameraViewModel.savePicture(imagePath = imagePath)
                         navController.navigate(Screen.PortfolioScreen.route)
                     }) {
                         Text(text = "Confirm")

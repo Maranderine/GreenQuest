@@ -13,6 +13,7 @@ import de.hsb.greenquest.data.local.entity.PlantPictureEntity
 import de.hsb.greenquest.data.local.utils.DataBaseConstants.GREEN_QUEST_DATABASE
 import de.hsb.greenquest.data.repository.PlantPictureRepositoryImpl
 import de.hsb.greenquest.domain.repository.PlantPictureRepository
+import de.hsb.greenquest.domain.usecase.TakePictureUseCase
 import javax.inject.Singleton
 
 @Module
@@ -37,5 +38,11 @@ object AppModule {
     @Singleton
     fun providePlantPictureRepository(dao: PlantPictureDao): PlantPictureRepository {
         return PlantPictureRepositoryImpl(dao)
+    }
+
+    @Provides
+    @Singleton
+    fun provideTakePictureUseCase(plantPictureRepository: PlantPictureRepository): TakePictureUseCase {
+        return TakePictureUseCase(plantPictureRepository)
     }
 }
