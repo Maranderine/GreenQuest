@@ -1,5 +1,6 @@
 package de.hsb.greenquest.domain.usecase
 
+<<<<<<< HEAD
 import android.util.Log
 import de.hsb.greenquest.domain.model.Plant
 import de.hsb.greenquest.domain.repository.PlantPictureRepository
