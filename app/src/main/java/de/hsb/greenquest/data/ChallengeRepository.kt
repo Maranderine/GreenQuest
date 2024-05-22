@@ -1,5 +1,6 @@
 package de.hsb.greenquest.data
 
+import de.hsb.greenquest.Challenge
 import kotlinx.coroutines.flow.Flow
 
 interface ChallengeRepository {
@@ -8,11 +9,12 @@ interface ChallengeRepository {
      */
     fun getAllChallengesStream(): Flow<List<LocalChallenge>>
 
+    fun getActiveChallengesStream(): Flow<List<LocalChallenge>>
 
     /**
      * Insert item in the data source
      */
-    suspend fun insertChallenge(challenge: LocalChallenge)
+    suspend fun insertChallenge(challenge: Challenge)
 
     /**
      * Delete item from the data source
@@ -23,4 +25,12 @@ interface ChallengeRepository {
      * Update item in the data source
      */
     suspend fun updateChallenge(challenge: LocalChallenge)
+
+    suspend fun clearAll()
+
+    suspend fun resetChallenges()
+
+    suspend fun getRandom(randomCount: Number): List<LocalChallenge>
+
+
 }

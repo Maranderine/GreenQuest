@@ -12,5 +12,5 @@ data class LocalChallenge (
     val Plant: String,
     val requiredCount: Int,
     val progress: Int,
-    val date: Date
+    val date: String?
 )

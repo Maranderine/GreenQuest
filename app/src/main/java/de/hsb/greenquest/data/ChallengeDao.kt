@@ -20,6 +20,23 @@ interface ChallengeDao {
     suspend fun delete(challenge: LocalChallenge)
 
     @Query("SELECT * from challenges")
-    fun getChallenges(): Flow<List<LocalChallenge>>
+    fun getChallengesStream(): Flow<List<LocalChallenge>>
+
+    @Query("DELETE from challenges")
+    suspend fun clearAll()
+
+    @Query("""UPDATE challenges SET date = NULL, progress = 0
+    """)
+    suspend fun resetChallenges()
+
+    @Query("SELECT * from challenges WHERE date IS NOT NUll")
+    fun getActiveChallengesStream(): Flow<List<LocalChallenge>>
+
+    @Query(
+        """SELECT * from challenges
+ORDER BY RANDOM()
+LIMIT(:randomCount)"""
+    )
+    suspend fun getRandomChallengeSelection(randomCount: String): List<LocalChallenge>
 
 }

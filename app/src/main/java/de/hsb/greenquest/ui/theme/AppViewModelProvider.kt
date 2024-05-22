@@ -14,7 +14,9 @@ object AppViewModelProvider {
 
         // Initializer for ItemEntryViewModel
         initializer {
-            ChallengeViewModel(GreenQuestApplication().container.challengeRepository)
+            ChallengeViewModel(
+                inventoryApplication().container.challengeRepository
+            )
         }
     }
 
