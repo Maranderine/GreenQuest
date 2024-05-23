@@ -30,6 +30,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.Color
@@ -40,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import de.hsb.greenquest.ui.theme.AppViewModelProvider
 import de.hsb.greenquest.ui.theme.GreenQuestTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
+import de.hsb.greenquest.data.LocalChallenge
 import de.hsb.greenquest.data.toExternal
 
 import kotlinx.coroutines.launch
@@ -68,14 +70,8 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun ChallengeScreen(name: String, modifier: Modifier = Modifier, viewModel: ChallengeViewModel? = viewModel(factory = AppViewModelProvider.Factory)) {
     val coroutineScope = rememberCoroutineScope()
-    coroutineScope.launch {
-        viewModel?.challengeList?.collect({
-            challenges ->
-            viewModel.updateUiState(challenges.toExternal()) })
-        if (viewModel != null) {
-            println(viewModel.challengesUiState.challenges )
-        }
-    }
+    var challenges = viewModel?.challengeList?.collectAsState()?.value?: listOf<LocalChallenge>()
+
 
     Column(
         modifier = Modifier
@@ -107,7 +103,7 @@ fun ChallengeScreen(name: String, modifier: Modifier = Modifier, viewModel: Chal
                 .padding(horizontal = 40.dp)
         ){
 
-            if(viewModel?.challengesUiState?.challenges?.size == 0){
+            if(challenges?.size == 0){
                 Column(
                     modifier = Modifier.fillMaxWidth().fillMaxHeight(),
                     verticalArrangement = Arrangement.Top,
@@ -130,16 +126,15 @@ fun ChallengeScreen(name: String, modifier: Modifier = Modifier, viewModel: Chal
                 //verticalArrangement = Arrangement.SpaceAround,
                 horizontalAlignment = Alignment.CenterHorizontally
             ){
-                items(viewModel?.challengesUiState?.challenges?.size?: 0) { index ->
-                    val challenges = viewModel?.challengesUiState?.challenges?: listOf<Challenge>()
+                items(challenges?.size?: 0) { index ->
                     ChallengeCard(
                         modifier = Modifier.clickable { coroutineScope.launch {
                             if (viewModel != null) {
-                                val challenge = viewModel.challengesUiState.challenges.get(index)
+                                val challenge = challenges.get(index).toExternal()
                                 viewModel.updateChallenge(challenge.copy(progress = challenge.progress+1))
                             }
                         } },
-                        challenges[index]
+                        challenge = challenges.toExternal()[index]
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                 }
