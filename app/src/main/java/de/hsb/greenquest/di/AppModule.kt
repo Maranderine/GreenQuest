@@ -11,7 +11,7 @@ import de.hsb.greenquest.data.local.GreenQuestDB
 import de.hsb.greenquest.data.local.dao.PlantPictureDao
 import de.hsb.greenquest.data.local.entity.PlantPictureEntity
 import de.hsb.greenquest.data.local.utils.DataBaseConstants.GREEN_QUEST_DATABASE
-import de.hsb.greenquest.data.repository.PlantPictureRepositoryImpl
+import de.hsb.greenquest.data.repository.PlantPictureMediaStoreRepositoryImpl
 import de.hsb.greenquest.domain.repository.PlantPictureRepository
 import de.hsb.greenquest.domain.usecase.TakePictureUseCase
 import javax.inject.Singleton
@@ -34,10 +34,16 @@ object AppModule {
     @Singleton
     fun providePlantPictureEntity() = PlantPictureEntity()
 
+//    @Provides
+//    @Singleton
+//    fun providePlantPictureRepository(dao: PlantPictureDao): PlantPictureRepository {
+//        return PlantPictureRepositoryImpl(dao)
+//    }
+
     @Provides
     @Singleton
-    fun providePlantPictureRepository(dao: PlantPictureDao): PlantPictureRepository {
-        return PlantPictureRepositoryImpl(dao)
+    fun providePlantPictureRepository(@ApplicationContext context: Context, dao: PlantPictureDao): PlantPictureRepository {
+        return PlantPictureMediaStoreRepositoryImpl(context, dao)
     }
 
     @Provides
@@ -45,4 +51,11 @@ object AppModule {
     fun provideTakePictureUseCase(plantPictureRepository: PlantPictureRepository): TakePictureUseCase {
         return TakePictureUseCase(plantPictureRepository)
     }
+
+    /*@Provides
+    @Singleton
+    fun provideContext(@ApplicationContext context: Context): Context {
+        return context
+    }*/
+
 }

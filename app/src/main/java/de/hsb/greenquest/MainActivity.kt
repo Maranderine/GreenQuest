@@ -19,14 +19,15 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import de.hsb.greenquest.ui.navigation.BottomNavigationBar
 import de.hsb.greenquest.ui.navigation.Screen
-import de.hsb.greenquest.ui.screen.CategoryScreen
 import de.hsb.greenquest.ui.screen.PortfolioScreen
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import dagger.hilt.android.AndroidEntryPoint
 import de.hsb.greenquest.ui.Camera.CameraPreviewScreen
-import de.hsb.greenquest.ui.Camera.ImageGalleryApp
+import de.hsb.greenquest.ui.screen.PlantDetailScreen
 import de.hsb.greenquest.ui.theme.GreenQuestTheme
 import de.hsb.greenquest.ui.viewmodel.PortfolioViewModel
 
@@ -81,7 +82,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-//                    ImageGalleryApp()
+
 
                     val navController = rememberNavController()
                     Scaffold(
@@ -93,12 +94,15 @@ class MainActivity : ComponentActivity() {
                         },
                     ) {
                         innerPadding ->
-                        NavHost(navController = navController, startDestination = Screen.PortfolioScreen.route, Modifier.padding(innerPadding)) {
+                        NavHost(navController = navController, startDestination = Screen.CameraScreen.route, Modifier.padding(innerPadding)) {
                             composable(route = Screen.PortfolioScreen.route) {
                                 PortfolioScreen(navController = navController)
                             }
-                            composable(route = Screen.PortfolioCategoryScreen.route) {
-                                CategoryScreen(navController = navController)
+                            composable(
+                                route = Screen.PlantDetailScreen.route + "/{plantName}",
+                                arguments = listOf(navArgument("plantName") { type = NavType.StringType })
+                            ) {
+                                PlantDetailScreen(navController = navController, name = it.arguments?.getString("plantName"))
                             }
                             composable(route = Screen.CameraScreen.route) {
                                 CameraPreviewScreen(navController = navController)

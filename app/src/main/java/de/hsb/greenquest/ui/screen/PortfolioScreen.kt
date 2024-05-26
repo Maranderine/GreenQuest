@@ -10,7 +10,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -26,6 +29,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -47,18 +51,25 @@ fun PortfolioScreen(navController: NavController) {
             .padding(MaterialTheme.spacing.small)
             .fillMaxSize()
     ) {
-
+        //ImageGalleryApp()
         val portfolioViewModel = hiltViewModel<PortfolioViewModel>()
 
         //PortfolioCategory(title = "Recent", names = test)
+        val plantList by portfolioViewModel.plantListFlow.collectAsStateWithLifecycle()
 
-        portfolioViewModel.categories.forEach { categoryName ->
-            PortfolioCategory(
-                title = categoryName,
-                navController = navController,
-                portfolioViewModel = portfolioViewModel
-            )
-        }
+//        LazyRow {
+//            items(plantList.size) { index ->
+//                PortfolioElement(plant = plantList[index])
+//            }
+//        }
+
+        Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
+        LazyVerticalGrid(columns = GridCells.Adaptive(116.dp), content = {
+            items(plantList.size) { index ->
+                PortfolioElement(plantList[index], navController, portfolioViewModel)
+            }
+        })
+
 
 
     }
@@ -66,31 +77,20 @@ fun PortfolioScreen(navController: NavController) {
 
 @Composable
 fun PortfolioCategory(title: String, navController: NavController, portfolioViewModel: PortfolioViewModel) {
-    val plantList by portfolioViewModel.plantListFlow.collectAsStateWithLifecycle()
-
     Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
     Text(
         text = title,
         style = TextStyle(textDecoration = TextDecoration.Underline),
         modifier = Modifier
             .clickable {
-                navController.navigate(Screen.PortfolioCategoryScreen.route)
+                //navController.navigate(Screen.PortfolioCategoryScreen.route)
             }
     )
-    LazyRow {
-        items(plantList.size) { index ->
-            PortfolioElement(plant = plantList[index], title = title)
-        }
-    }
 }
 
 @Composable
-fun PortfolioElement(plant: Plant, title: String) {
+fun PortfolioElement(plant: Plant, navController: NavController, portfolioViewModel: PortfolioViewModel) {
     val context = LocalContext.current
-
-    if (title == "Favorite" && !plant.favorite) {
-        return
-    }
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -101,17 +101,25 @@ fun PortfolioElement(plant: Plant, title: String) {
             contentDescription = "",
             contentScale = ContentScale.Crop,
             modifier = Modifier
-                .padding(8.dp)
+                .padding(0.dp)
                 .size(100.dp)
                 .clip(RoundedCornerShape(30.dp))
                 .clickable {
                     Toast
                         .makeText(context, plant.name, Toast.LENGTH_SHORT)
                         .show()
+
+                    navController.navigate(Screen.PlantDetailScreen.route + "/" + plant.name)
+
                 }
 
         )
-        Text(text = plant.name)
+        Text(
+            text = plant.name,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.width(100.dp)
+        )
     }
 
 }

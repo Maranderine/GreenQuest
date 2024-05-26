@@ -22,7 +22,7 @@ class CameraViewModel @Inject constructor(
 
     fun savePicture(imagePath: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            takePictureUseCase.takePicture(imagePath = imagePath)
+            //takePictureUseCase.takePicture(imagePath = imagePath)
         }
     }
 }

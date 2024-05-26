@@ -1,5 +1,8 @@
 package de.hsb.greenquest.ui.viewmodel
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.painterResource
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -19,7 +22,7 @@ class PortfolioViewModel @Inject constructor(
     private val plantPictureRepository: PlantPictureRepository
 ): ViewModel() {
 
-    private val _plantListFlow = MutableStateFlow<MutableList<Plant>>(mutableListOf())
+    private val _plantListFlow = MutableStateFlow<List<Plant>>(mutableListOf())
     val plantListFlow get() = _plantListFlow.asStateFlow()
 
     init {
@@ -29,7 +32,5 @@ class PortfolioViewModel @Inject constructor(
             }
         }
     }
-
-    val categories = listOf<String>("Recent", "Favorite", )
 
 }

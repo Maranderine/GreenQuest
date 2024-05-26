@@ -155,7 +155,7 @@ private fun rotateBitmap(bitmap: Bitmap, degrees: Float): Bitmap {
 
 
 private fun captureImage(imageCapture: ImageCapture, context: Context, onImageCaptured: (String) -> Unit) {
-    val name = "CameraxImage.jpeg"
+    val name = "GreenQuest.jpeg"
     val contentValues = ContentValues().apply {
         put(MediaStore.MediaColumns.DISPLAY_NAME, name)
         put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
