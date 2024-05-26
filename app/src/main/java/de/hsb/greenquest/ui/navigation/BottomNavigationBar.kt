@@ -38,6 +38,11 @@ fun BottomNavigationBar(navController: NavController) {
             route = Screen.PortfolioScreen.route,
             icon = painterResource(id = R.drawable.photo_album)
         ),
+        BottomNavigationItem(
+            title = "Challenges",
+            route = Screen.ChallengeScreen.route,
+            icon = painterResource(id = R.drawable.photo_album)
+        ),
     )
     var selectedItemIndex by rememberSaveable() {
         mutableStateOf(0)

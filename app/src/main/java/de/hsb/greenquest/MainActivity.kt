@@ -1,35 +1,33 @@
 package de.hsb.greenquest
 
-
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.graphics.Color
+import androidx.core.content.ContextCompat
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import de.hsb.greenquest.ui.navigation.BottomNavigationBar
-import de.hsb.greenquest.ui.navigation.Screen
-import de.hsb.greenquest.ui.screen.PortfolioScreen
-import androidx.core.content.ContextCompat
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import dagger.hilt.android.AndroidEntryPoint
 import de.hsb.greenquest.ui.Camera.CameraPreviewScreen
+import de.hsb.greenquest.ui.navigation.BottomNavigationBar
+import de.hsb.greenquest.ui.navigation.Screen
+import de.hsb.greenquest.ui.screen.ChallengeScreen
 import de.hsb.greenquest.ui.screen.PlantDetailScreen
+import de.hsb.greenquest.ui.screen.PortfolioScreen
 import de.hsb.greenquest.ui.theme.GreenQuestTheme
-import de.hsb.greenquest.ui.viewmodel.PortfolioViewModel
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -45,6 +43,7 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
         // Request camera and storage permissions
         val cameraPermission = Manifest.permission.CAMERA
@@ -79,11 +78,10 @@ class MainActivity : ComponentActivity() {
             GreenQuestTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+                    Modifier
+                        .fillMaxSize()
+                        .background(Color(0xFFB69DF8)), color = MaterialTheme.colorScheme.background
                 ) {
-
-
                     val navController = rememberNavController()
                     Scaffold(
                         bottomBar = {
@@ -107,12 +105,15 @@ class MainActivity : ComponentActivity() {
                             composable(route = Screen.CameraScreen.route) {
                                 CameraPreviewScreen(navController = navController)
                             }
+                            composable(route = Screen.ChallengeScreen.route) {
+                                ChallengeScreen(name = "Android")
+                            }
                         }
                     }
-
                 }
             }
         }
     }
-
 }
+
+

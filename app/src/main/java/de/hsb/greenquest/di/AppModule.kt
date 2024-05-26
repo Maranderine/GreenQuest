@@ -7,11 +7,14 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import de.hsb.greenquest.data.local.GreenQuestDB
+import de.hsb.greenquest.data.local.ChallengeDatabas
+import de.hsb.greenquest.data.local.dao.ChallengeDao
 import de.hsb.greenquest.data.local.dao.PlantPictureDao
 import de.hsb.greenquest.data.local.entity.PlantPictureEntity
 import de.hsb.greenquest.data.local.utils.DataBaseConstants.GREEN_QUEST_DATABASE
+import de.hsb.greenquest.data.repository.ChallengeRepositoryImpl
 import de.hsb.greenquest.data.repository.PlantPictureMediaStoreRepositoryImpl
+import de.hsb.greenquest.domain.repository.ChallengeRepository
 import de.hsb.greenquest.domain.repository.PlantPictureRepository
 import de.hsb.greenquest.domain.usecase.TakePictureUseCase
 import javax.inject.Singleton
@@ -23,12 +26,12 @@ object AppModule {
     @Provides
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context) = Room.databaseBuilder(
-        context, GreenQuestDB::class.java, GREEN_QUEST_DATABASE
+        context, ChallengeDatabas::class.java, GREEN_QUEST_DATABASE
     ).fallbackToDestructiveMigration().build()
 
     @Provides
     @Singleton
-    fun providePlantPictureDao(db: GreenQuestDB) = db.plantPictureDao()
+    fun providePlantPictureDao(db: ChallengeDatabas) = db.plantPictureDao()
 
     @Provides
     @Singleton
@@ -52,10 +55,13 @@ object AppModule {
         return TakePictureUseCase(plantPictureRepository)
     }
 
-    /*@Provides
+    @Provides
     @Singleton
-    fun provideContext(@ApplicationContext context: Context): Context {
-        return context
-    }*/
+    fun provideChallengeDao(db: ChallengeDatabas) = db.challengeDao()
 
+    @Provides
+    @Singleton
+    fun provideChallengeRepository(dao: ChallengeDao): ChallengeRepository {
+        return ChallengeRepositoryImpl(dao)
+    }
 }
