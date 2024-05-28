@@ -5,6 +5,8 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
+import android.location.Location
+import android.media.ExifInterface
 import android.os.Build
 import android.provider.MediaStore
 import android.util.Log
@@ -34,6 +36,8 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import de.hsb.greenquest.ui.navigation.Screen
 import de.hsb.greenquest.ui.viewmodel.CameraViewModel
 import java.io.File
@@ -60,6 +64,7 @@ fun CameraPreviewScreen(navController: NavController) {
 
     var isCameraOpen by remember { mutableStateOf(true) } // Track if the camera is open
     var capturedImagePath by remember { mutableStateOf<String?>(null) } // Track the captured image path
+    val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
 
     LaunchedEffect(lensFacing) {
         val cameraProvider = context.getCameraProvider()
@@ -72,9 +77,11 @@ fun CameraPreviewScreen(navController: NavController) {
         if (isCameraOpen) {
             AndroidView({ previewView }, modifier = Modifier.fillMaxSize())
             Button(onClick = {
-                captureImage(imageCapture, context) { imagePath ->
-                    capturedImagePath = imagePath
-                    isCameraOpen = false // Close the camera after capturing the image
+                getCurrentLocation(context, fusedLocationClient) { location ->
+                    captureImage(imageCapture, context, location) { imagePath ->
+                        capturedImagePath = imagePath
+                        isCameraOpen = false // Close the camera after capturing the image
+                    }
                 }
             }) {
                 Text(text = "Capture Image")
@@ -115,6 +122,34 @@ fun CameraPreviewScreen(navController: NavController) {
     }
 }
 
+// Function to get the current location
+private fun getCurrentLocation(context: Context, fusedLocationClient: FusedLocationProviderClient, callback: (Location?) -> Unit) {
+    try {
+        fusedLocationClient.lastLocation
+            .addOnSuccessListener { location ->
+                callback(location)
+            }
+            .addOnFailureListener {
+                callback(null)
+            }
+    } catch (e: SecurityException) {
+        callback(null)
+    }
+}
+
+// Function to add GPS metadata
+private fun addGPSMetadata(filePath: String, location: Location) {
+    try {
+        val exif = ExifInterface(filePath)
+        exif.setGpsInfo(location)
+        exif.saveAttributes()
+        println("GPS metadata added successfully.")
+    } catch (e: Exception) {
+        println("Failed to add GPS metadata: ${e.message}")
+    }
+}
+
+
 // Function to delete the image
 fun deleteImage(imagePath: String) {
     val imageFile = File(imagePath)
@@ -154,7 +189,7 @@ private fun rotateBitmap(bitmap: Bitmap, degrees: Float): Bitmap {
 }
 
 
-private fun captureImage(imageCapture: ImageCapture, context: Context, onImageCaptured: (String) -> Unit) {
+private fun captureImage(imageCapture: ImageCapture, context: Context, location: Location?, onImageCaptured: (String) -> Unit) {
     val name = "GreenQuest.jpeg"
     val contentValues = ContentValues().apply {
         put(MediaStore.MediaColumns.DISPLAY_NAME, name)
@@ -170,14 +205,15 @@ private fun captureImage(imageCapture: ImageCapture, context: Context, onImageCa
             contentValues
         )
         .build()
+
     imageCapture.takePicture(
         outputOptions,
         ContextCompat.getMainExecutor(context),
         object : ImageCapture.OnImageSavedCallback {
             override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                // Get the most recent image added to the MediaStore
+                val savedUri = outputFileResults.savedUri
                 val cursor = context.contentResolver.query(
-                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                    savedUri!!,
                     arrayOf(MediaStore.Images.Media.DATA),
                     null,
                     null,
@@ -190,6 +226,9 @@ private fun captureImage(imageCapture: ImageCapture, context: Context, onImageCa
                         val filePath = cursor.getString(dataColumnIndex)
                         println("Image saved successfully at $filePath")
                         Log.d("FILEPATH2", filePath)
+                        location?.let {
+                            addGPSMetadata(filePath, it)
+                        }
                         onImageCaptured(filePath) // Call the callback with the correct file path
                     } else {
                         println("Unable to retrieve file path.")
@@ -197,12 +236,12 @@ private fun captureImage(imageCapture: ImageCapture, context: Context, onImageCa
                 }
             }
 
-
             override fun onError(exception: ImageCaptureException) {
                 println("Failed $exception")
             }
         })
 }
+
 
 private suspend fun Context.getCameraProvider(): ProcessCameraProvider =
     suspendCoroutine { continuation ->
@@ -212,3 +251,29 @@ private suspend fun Context.getCameraProvider(): ProcessCameraProvider =
             }, ContextCompat.getMainExecutor(this))
         }
     }
+
+fun ExifInterface.setGpsInfo(location: Location) {
+    val lat = location.latitude
+    val lon = location.longitude
+
+    val latRef = if (lat < 0) "S" else "N"
+    val lonRef = if (lon < 0) "W" else "E"
+
+    val absLat = Math.abs(lat)
+    val absLon = Math.abs(lon)
+
+    val latDeg = absLat.toInt()
+    val latMin = ((absLat - latDeg) * 60).toInt()
+    val latSec = (((absLat - latDeg) * 60 - latMin) * 60 * 1000).toInt()
+
+    val lonDeg = absLon.toInt()
+    val lonMin = ((absLon - lonDeg) * 60).toInt()
+    val lonSec = (((absLon - lonDeg) * 60 - lonMin) * 60 * 1000).toInt()
+
+    setAttribute(ExifInterface.TAG_GPS_LATITUDE, "$latDeg/1,$latMin/1,$latSec/1000")
+    setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF, latRef)
+    setAttribute(ExifInterface.TAG_GPS_LONGITUDE, "$lonDeg/1,$lonMin/1,$lonSec/1000")
+    setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, lonRef)
+    setAttribute(ExifInterface.TAG_GPS_TIMESTAMP, location.time.toString())
+    setAttribute(ExifInterface.TAG_GPS_DATESTAMP, android.text.format.DateFormat.format("yyyy:MM:dd", location.time).toString())
+}

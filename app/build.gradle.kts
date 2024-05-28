@@ -84,6 +84,8 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-test-manifest")
     implementation("io.coil-kt:coil-compose:2.2.2")
 
+    implementation ("com.google.android.gms:play-services-location:21.0.1")
+
     // Camerax implementation
     val cameraxVersion = "1.3.1"
     implementation ("androidx.camera:camera-core:${cameraxVersion}")
