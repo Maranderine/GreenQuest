@@ -17,18 +17,6 @@ class PlantPictureRepositoryImpl @Inject constructor(
     private val plantPictureDao: PlantPictureDao,
     private val plantPictureMediaStoreLoader: PlantPictureMediaStoreLoader
 ): PlantPictureRepository {
-//    override suspend fun savePlantPicture(plant: Plant) {
-//        plantPictureDao.savePlantPicture(plant.toPlantPictureEntity())
-//    }
-
-//    suspend fun savePlantPicture(plantPicture: PlantPictureEntity, commonNames: List<String>) {
-//        val plantPictureId = plantPictureDao.insertPlantPicture(plantPicture)
-//        for (name in commonNames) {
-//            val commonNameEntity = CommonNameEntity(plantPictureId = plantPictureId.toInt(), commonName = name)
-//            plantPictureDao.insertCommonName(commonNameEntity)
-//        }
-//    }
-
     override suspend fun savePlantPicture(plant: Plant) {
         val plantPictureId = plantPictureDao.insertPlantPicture(plant.toPlantPictureEntity())
         for (name in plant.commonNames) {
@@ -43,6 +31,14 @@ class PlantPictureRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun updatePlantPicture(plant: Plant) {
+        plantPictureDao.updatePlantPicture(
+            name = plant.name,
+            favorite = plant.favorite,
+            description = plant.description
+        )
+    }
+
     private suspend fun PlantPictureWithCommonNames.toPlant(): Plant {
         val mediaStorePlantPictures = plantPictureMediaStoreLoader.getAllPlantPictures()
 
@@ -51,8 +47,6 @@ class PlantPictureRepositoryImpl @Inject constructor(
         }.firstOrNull() // Collect the first matching plant
 
         val imagePath = mediaStorePlantPicture?.imagePath
-
-        //Log.d("imagePath", imagePath.toString())
 
         return Plant(
             name = plantPicture.name,

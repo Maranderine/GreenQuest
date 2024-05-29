@@ -33,4 +33,10 @@ class PortfolioViewModel @Inject constructor(
         }
     }
 
+    fun updatePlant(plant: Plant) {
+        viewModelScope.launch(Dispatchers.IO) {
+            plantPictureRepository.updatePlantPicture(plant)
+        }
+    }
+
 }
