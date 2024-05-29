@@ -6,5 +6,5 @@ import kotlinx.coroutines.flow.Flow
 
 interface PlantPictureRepository {
     suspend fun savePlantPicture(plant: Plant)
-    fun getAllPlantPictures(): Flow<MutableList<Plant>>
+    suspend fun getAllPlantPictures(): Flow<List<Plant>>
 }

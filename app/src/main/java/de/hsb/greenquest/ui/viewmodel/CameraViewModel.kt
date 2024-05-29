@@ -20,9 +20,11 @@ class CameraViewModel @Inject constructor(
 //    var imagePath by mutableStateOf<String>("")
 //    var imageName by mutableStateOf<String>("")
 
-    fun savePicture(imagePath: String) {
+    //var plantFileName by mutableStateOf<String>("")
+
+    fun savePicture(plantFileName: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            //takePictureUseCase.takePicture(imagePath = imagePath)
+            takePictureUseCase.takePicture(plantFileName)
         }
     }
 }

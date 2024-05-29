@@ -8,10 +8,8 @@ import javax.inject.Inject
 class TakePictureUseCase @Inject constructor(
     private val repository: PlantPictureRepository
 ) {
-    /*suspend fun takePicture(imagePath: String) {
-        repository.savePlantPicture(Plant(
-            //TODO the image name should be returned from the API instead of the actual filename
-            imagePath.substringAfterLast("/"),"", imagePath, false
-        ))
-    }*/
+    suspend fun takePicture(plantFileName: String, species: String = "apiSpecies", commonNames: List<String> = listOf("apiName1", "apiName2")) {
+        Log.d("plantFileName", plantFileName)
+        repository.savePlantPicture(Plant(name = plantFileName, imagePath = null, description = "", favorite = false, species = species, commonNames = commonNames))
+    }
 }

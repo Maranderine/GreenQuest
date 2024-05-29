@@ -6,10 +6,11 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import de.hsb.greenquest.data.local.dao.ChallengeDao
 import de.hsb.greenquest.data.local.dao.PlantPictureDao
+import de.hsb.greenquest.data.local.entity.CommonNameEntity
 import de.hsb.greenquest.data.local.entity.LocalChallengeEntity
 import de.hsb.greenquest.data.local.entity.PlantPictureEntity
 
-@Database(entities = [LocalChallengeEntity::class, PlantPictureEntity::class], version = 2, exportSchema = true)
+@Database(entities = [LocalChallengeEntity::class, PlantPictureEntity::class, CommonNameEntity::class], version = 3, exportSchema = true)
 abstract class ChallengeDatabas: RoomDatabase() {
     abstract fun challengeDao(): ChallengeDao
     abstract fun plantPictureDao(): PlantPictureDao

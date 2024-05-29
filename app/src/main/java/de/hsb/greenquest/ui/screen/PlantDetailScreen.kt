@@ -10,6 +10,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -41,6 +45,9 @@ fun PlantDetailScreen(navController: NavController, name: String?) {
             .fillMaxSize()
     ) {
         Text(text = name?: "No Name")
+        IconButton(onClick = { /*TODO*/ }) {
+            Icon(imageVector = Icons.Filled.Favorite, contentDescription = "")
+        }
         Image(
             painter = rememberAsyncImagePainter(model = plant?.imagePath),
             contentDescription = "",
@@ -49,6 +56,8 @@ fun PlantDetailScreen(navController: NavController, name: String?) {
                 .padding(0.dp)
                 .fillMaxWidth()
         )
+
+
 
     }
 }
