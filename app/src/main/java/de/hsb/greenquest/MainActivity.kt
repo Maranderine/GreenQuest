@@ -1,5 +1,6 @@
 package de.hsb.greenquest
 
+import NearbyConnectionScreen
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -14,6 +15,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -25,7 +27,6 @@ import de.hsb.greenquest.ui.Camera.CameraPreviewScreen
 import de.hsb.greenquest.ui.navigation.BottomNavigationBar
 import de.hsb.greenquest.ui.navigation.Screen
 import de.hsb.greenquest.ui.screen.ChallengeScreen
-import de.hsb.greenquest.ui.screen.NearbyShareScreen
 import de.hsb.greenquest.ui.screen.PlantDetailScreen
 import de.hsb.greenquest.ui.screen.PortfolioScreen
 import de.hsb.greenquest.ui.theme.GreenQuestTheme
@@ -119,7 +120,7 @@ class MainActivity : ComponentActivity() {
                                 ChallengeScreen(name = "Android")
                             }
                             composable(route = Screen.NearbyShareScreen.route) {
-                                NearbyShareScreen()
+                                NearbyConnectionScreen()
                             }
                         }
                     }
