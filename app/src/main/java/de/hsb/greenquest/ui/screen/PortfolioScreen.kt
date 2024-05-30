@@ -105,14 +105,8 @@ fun PortfolioElement(plant: Plant, navController: NavController, portfolioViewMo
                 .size(100.dp)
                 .clip(RoundedCornerShape(30.dp))
                 .clickable {
-                    Toast
-                        .makeText(context, plant.name, Toast.LENGTH_SHORT)
-                        .show()
-
                     navController.navigate(Screen.PlantDetailScreen.route + "/" + plant.name)
-
                 }
-
         )
         Text(
             text = plant.name,

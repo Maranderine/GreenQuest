@@ -39,6 +39,20 @@ class PlantPictureRepositoryImpl @Inject constructor(
         )
     }
 
+    override suspend fun deletePlantPicture(plant: Plant) {
+
+        val plantEntity = plantPictureDao.getPlantPictureWithCommonNameByName(name = plant.name).firstOrNull()
+
+        plantEntity?.let {
+            plantPictureMediaStoreLoader.deletePlantPicture(plant = plant)
+            plantPictureDao.deletePlantPicture(plantPicture = plantEntity.plantPicture)
+
+            for (commonNameEntity in plantEntity.commonNames) {
+                plantPictureDao.deleteCommonName(commonName = commonNameEntity)
+            }
+        }
+    }
+
     private suspend fun PlantPictureWithCommonNames.toPlant(): Plant {
         val mediaStorePlantPictures = plantPictureMediaStoreLoader.getAllPlantPictures()
 

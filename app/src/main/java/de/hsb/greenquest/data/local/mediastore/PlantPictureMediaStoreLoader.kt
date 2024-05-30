@@ -19,6 +19,14 @@ class PlantPictureMediaStoreLoader @Inject constructor(
         return loadPicturesFromMediaStore()
     }
 
+    fun deletePlantPicture(plant: Plant) {
+        val contentResolver = applicationContext.contentResolver
+
+        plant.imagePath?.let { uri ->
+            contentResolver.delete(uri, null, null) // Delete the picture from the MediaStore
+        }
+    }
+
     private fun loadPicturesFromMediaStore(): Flow<MutableList<Plant>> {
         val context = applicationContext
         val contentResolver = context.contentResolver
