@@ -44,26 +44,35 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-
         super.onCreate(savedInstanceState)
-        // Request camera and storage permissions
+        // Request camera, storage, and location permissions
         val cameraPermission = Manifest.permission.CAMERA
         val storagePermission = Manifest.permission.READ_MEDIA_IMAGES
+        val fineLocationPermission = Manifest.permission.ACCESS_FINE_LOCATION
+        val coarseLocationPermission = Manifest.permission.ACCESS_COARSE_LOCATION
 
         val hasCameraPermission = ContextCompat.checkSelfPermission(this, cameraPermission) == PackageManager.PERMISSION_GRANTED
         val hasStoragePermission = ContextCompat.checkSelfPermission(this, storagePermission) == PackageManager.PERMISSION_GRANTED
+        val hasFineLocationPermission = ContextCompat.checkSelfPermission(this, fineLocationPermission) == PackageManager.PERMISSION_GRANTED
+        val hasCoarseLocationPermission = ContextCompat.checkSelfPermission(this, coarseLocationPermission) == PackageManager.PERMISSION_GRANTED
 
-        if (hasCameraPermission && hasStoragePermission) {
-            // Both permissions are already granted
+        if (hasCameraPermission && hasStoragePermission && (hasFineLocationPermission || hasCoarseLocationPermission)) {
+            // All required permissions are granted
             setCameraPreview()
         } else {
-            // Request permissions
+            // Request the missing permissions
             val permissionsToRequest = mutableListOf<String>()
             if (!hasCameraPermission) {
                 permissionsToRequest.add(cameraPermission)
             }
             if (!hasStoragePermission) {
                 permissionsToRequest.add(storagePermission)
+            }
+            if (!hasFineLocationPermission) {
+                permissionsToRequest.add(fineLocationPermission)
+            }
+            if (!hasCoarseLocationPermission) {
+                permissionsToRequest.add(coarseLocationPermission)
             }
 
             requestPermissionsLauncher.launch(permissionsToRequest.toTypedArray())

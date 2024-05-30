@@ -1,28 +1,30 @@
-package de.hsb.greenquest.data.repository
+package de.hsb.greenquest.data.local.mediastore
 
 import android.content.ContentUris
 import android.content.Context
-import android.net.Uri
 import android.provider.MediaStore
-import android.util.Log
-import de.hsb.greenquest.data.local.dao.PlantPictureDao
-import de.hsb.greenquest.data.local.entity.PlantPictureEntity
 import de.hsb.greenquest.domain.model.Plant
-import de.hsb.greenquest.domain.repository.PlantPictureRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
-class PlantPictureMediaStoreRepositoryImpl @Inject constructor(
-    private val applicationContext: Context,
-    private val plantPictureDao: PlantPictureDao
-): PlantPictureRepository {
-    override suspend fun savePlantPicture(plant: Plant) {
+class PlantPictureMediaStoreLoader @Inject constructor(
+    private val applicationContext: Context
+)/*: PlantPictureRepository*/ {
+    /*override*/ suspend fun savePlantPicture(plant: Plant) {
         //TODO("Not yet implemented")
     }
 
-    override fun getAllPlantPictures(): Flow<MutableList<Plant>> {
+    /*override*/ fun getAllPlantPictures(): Flow<MutableList<Plant>> {
         return loadPicturesFromMediaStore()
+    }
+
+    fun deletePlantPicture(plant: Plant) {
+        val contentResolver = applicationContext.contentResolver
+
+        plant.imagePath?.let { uri ->
+            contentResolver.delete(uri, null, null) // Delete the picture from the MediaStore
+        }
     }
 
     private fun loadPicturesFromMediaStore(): Flow<MutableList<Plant>> {
@@ -65,7 +67,7 @@ class PlantPictureMediaStoreRepositoryImpl @Inject constructor(
                     val contentUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id)
 
                     // Add the Plant object to the list
-                    plantImageList.add(Plant(name = name, imagePath = contentUri, favorite = favorite, description = ""))
+                    plantImageList.add(Plant(name = name, imagePath = contentUri, favorite = favorite, description = "", commonNames = listOf(), species = ""))
 
 //                    Log.d("TESTTEST", "DISPLAY_NAME = $name")
 //                    Log.d("TESTTEST1", "CONTACT_ID = $id")
