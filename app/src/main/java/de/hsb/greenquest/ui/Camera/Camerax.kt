@@ -37,6 +37,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import de.hsb.greenquest.ui.navigation.Screen
@@ -116,7 +117,14 @@ fun CameraPreviewScreen(navController: NavController) {
                         //TODO API (imagePath)
                         cameraViewModel.savePicture(plantFileName.value)
                         Log.d("plantFileName4", plantFileName.value)
-                        navController.navigate(Screen.PortfolioScreen.route)
+                        navController.navigate(Screen.PortfolioScreen.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+
+                            launchSingleTop = true
+                            restoreState = true
+                        }
                     }) {
                         Text(text = "Confirm")
                     }
