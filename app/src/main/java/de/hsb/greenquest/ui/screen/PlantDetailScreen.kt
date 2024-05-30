@@ -31,6 +31,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -154,6 +155,8 @@ fun Dialogs(
     navController: NavController,
     plant: Plant
 ) {
+    var textFieldText by rememberSaveable { mutableStateOf(plant.description) }
+
     when {
         portfolioViewModel.openDeleteDialog -> {
             AlertDialog(
@@ -170,11 +173,14 @@ fun Dialogs(
         }
         portfolioViewModel.openTextFieldDialog -> {
             DialogWithTextInput(
-                plant = plant,
+                text = textFieldText,
                 onDismissRequest = { portfolioViewModel.openTextFieldDialog = false },
                 onConfirmation = {
                     portfolioViewModel.openTextFieldDialog = false
                     portfolioViewModel.updatePlant(plant.copy(description = it))
+                },
+                onTextChange = {
+                    textFieldText = it
                 },
                 labelText = "Notes",
             )
@@ -228,32 +234,33 @@ fun AlertDialog(
 fun DialogWithTextInput(
     onDismissRequest: () -> Unit,
     onConfirmation: (String) -> Unit,
+    onTextChange: (String) -> Unit,
     labelText: String,
-    plant: Plant
+    text: String
 ) {
-    var text by remember { mutableStateOf(plant.description) }
+    //var textFieldText by rememberSaveable { mutableStateOf(text) }
 
     Dialog(onDismissRequest = { onDismissRequest() }) {
         // Draw a rectangle shape with rounded corners inside the dialog
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            shape = RoundedCornerShape(16.dp),
+                .padding(MaterialTheme.spacing.medium),
+            shape = RoundedCornerShape(MaterialTheme.spacing.medium),
         ) {
             Column(
                 modifier = Modifier
-                    .padding(16.dp),
+                    .padding(MaterialTheme.spacing.medium),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 TextField(
                     value = text,
-                    onValueChange = { text = it },
+                    onValueChange = { /*textFieldText = it*/ onTextChange(it) },
                     label = { Text(labelText) },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 16.dp),
+                        .padding(bottom = MaterialTheme.spacing.medium),
                 )
                 Row(
                     modifier = Modifier
@@ -262,13 +269,13 @@ fun DialogWithTextInput(
                 ) {
                     TextButton(
                         onClick = { onDismissRequest() },
-                        modifier = Modifier.padding(8.dp),
+                        modifier = Modifier.padding(MaterialTheme.spacing.small),
                     ) {
                         Text("Dismiss")
                     }
                     TextButton(
                         onClick = { onConfirmation(text) },
-                        modifier = Modifier.padding(8.dp),
+                        modifier = Modifier.padding(MaterialTheme.spacing.small),
                     ) {
                         Text("Confirm")
                     }
