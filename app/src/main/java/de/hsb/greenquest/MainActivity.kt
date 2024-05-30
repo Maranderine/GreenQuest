@@ -25,6 +25,7 @@ import de.hsb.greenquest.ui.Camera.CameraPreviewScreen
 import de.hsb.greenquest.ui.navigation.BottomNavigationBar
 import de.hsb.greenquest.ui.navigation.Screen
 import de.hsb.greenquest.ui.screen.ChallengeScreen
+import de.hsb.greenquest.ui.screen.NearbyShareScreen
 import de.hsb.greenquest.ui.screen.PlantDetailScreen
 import de.hsb.greenquest.ui.screen.PortfolioScreen
 import de.hsb.greenquest.ui.theme.GreenQuestTheme
@@ -107,6 +108,9 @@ class MainActivity : ComponentActivity() {
                             }
                             composable(route = Screen.ChallengeScreen.route) {
                                 ChallengeScreen(name = "Android")
+                            }
+                            composable(route = Screen.NearbyShareScreen.route) {
+                                NearbyShareScreen()
                             }
                         }
                     }
