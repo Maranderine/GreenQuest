@@ -42,7 +42,7 @@ import kotlin.coroutines.suspendCoroutine
 
 
 @Composable
-fun CameraPreviewScreen(navController: NavController) {
+fun CameraPreviewScreen(navController: NavController, ) {
 
     val cameraViewModel = hiltViewModel<CameraViewModel>()
 
@@ -103,7 +103,7 @@ fun CameraPreviewScreen(navController: NavController) {
                     }
 
                     Button(onClick = {
-                        //TODO API (imagePath)
+                        cameraViewModel.identify(imagePath)
                         cameraViewModel.savePicture(imagePath = imagePath)
                         navController.navigate(Screen.PortfolioScreen.route)
                     }) {

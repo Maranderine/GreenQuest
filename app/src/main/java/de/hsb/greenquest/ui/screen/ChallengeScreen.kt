@@ -153,3 +153,8 @@ fun ChallengeCard(modifier: Modifier = Modifier, challenge: Challenge) {
         }
     }
 }
+
+//TODO class for application broadcasts
+//TODO HttpOK
+//TODO datasource and repo for application wide events
+//TODO datasource and repo for network calls
