@@ -51,13 +51,31 @@ class MainActivity : ComponentActivity() {
         val storagePermission = Manifest.permission.READ_MEDIA_IMAGES
         val fineLocationPermission = Manifest.permission.ACCESS_FINE_LOCATION
         val coarseLocationPermission = Manifest.permission.ACCESS_COARSE_LOCATION
+        val bluetoothPermission = Manifest.permission.BLUETOOTH
+        val bluetoothAdminPermission = Manifest.permission.BLUETOOTH_ADMIN
+        val bluetoothScanPermission = Manifest.permission.BLUETOOTH_SCAN
+        val bluetoothAdvertisePermission = Manifest.permission.BLUETOOTH_ADVERTISE
+        val bluetoothConnectPermission = Manifest.permission.BLUETOOTH_CONNECT
+        val internetPermission = Manifest.permission.INTERNET
+        val accessWifiStatePermission = Manifest.permission.ACCESS_WIFI_STATE
+        val changeWifiStatePermission = Manifest.permission.CHANGE_WIFI_STATE
 
         val hasCameraPermission = ContextCompat.checkSelfPermission(this, cameraPermission) == PackageManager.PERMISSION_GRANTED
         val hasStoragePermission = ContextCompat.checkSelfPermission(this, storagePermission) == PackageManager.PERMISSION_GRANTED
         val hasFineLocationPermission = ContextCompat.checkSelfPermission(this, fineLocationPermission) == PackageManager.PERMISSION_GRANTED
         val hasCoarseLocationPermission = ContextCompat.checkSelfPermission(this, coarseLocationPermission) == PackageManager.PERMISSION_GRANTED
+        val hasBluetoothPermission = ContextCompat.checkSelfPermission(this, bluetoothPermission) == PackageManager.PERMISSION_GRANTED
+        val hasBluetoothAdminPermission = ContextCompat.checkSelfPermission(this, bluetoothAdminPermission) == PackageManager.PERMISSION_GRANTED
+        val hasBluetoothScanPermission = ContextCompat.checkSelfPermission(this, bluetoothScanPermission) == PackageManager.PERMISSION_GRANTED
+        val hasBluetoothAdvertisePermission = ContextCompat.checkSelfPermission(this, bluetoothAdvertisePermission) == PackageManager.PERMISSION_GRANTED
+        val hasBluetoothConnectPermission = ContextCompat.checkSelfPermission(this, bluetoothConnectPermission) == PackageManager.PERMISSION_GRANTED
+        val hasInternetPermission = ContextCompat.checkSelfPermission(this, internetPermission) == PackageManager.PERMISSION_GRANTED
+        val hasAccessWifiStatePermission = ContextCompat.checkSelfPermission(this, accessWifiStatePermission) == PackageManager.PERMISSION_GRANTED
+        val hasChangeWifiStatePermission = ContextCompat.checkSelfPermission(this, changeWifiStatePermission) == PackageManager.PERMISSION_GRANTED
 
-        if (hasCameraPermission && hasStoragePermission && (hasFineLocationPermission || hasCoarseLocationPermission)) {
+        if (hasCameraPermission && hasStoragePermission && (hasFineLocationPermission || hasCoarseLocationPermission)
+            && hasBluetoothPermission && hasBluetoothAdminPermission && hasBluetoothScanPermission
+            && hasBluetoothAdvertisePermission && hasBluetoothConnectPermission && hasInternetPermission) {
             // All required permissions are granted
             setCameraPreview()
         } else {
@@ -74,6 +92,24 @@ class MainActivity : ComponentActivity() {
             }
             if (!hasCoarseLocationPermission) {
                 permissionsToRequest.add(coarseLocationPermission)
+            }
+            if (!hasBluetoothPermission) {
+                permissionsToRequest.add(bluetoothPermission)
+            }
+            if (!hasBluetoothAdminPermission) {
+                permissionsToRequest.add(bluetoothAdminPermission)
+            }
+            if (!hasBluetoothScanPermission) {
+                permissionsToRequest.add(bluetoothScanPermission)
+            }
+            if (!hasBluetoothAdvertisePermission) {
+                permissionsToRequest.add(bluetoothAdvertisePermission)
+            }
+            if (!hasBluetoothConnectPermission) {
+                permissionsToRequest.add(bluetoothConnectPermission)
+            }
+            if (!hasInternetPermission) {
+                permissionsToRequest.add(internetPermission)
             }
 
             requestPermissionsLauncher.launch(permissionsToRequest.toTypedArray())

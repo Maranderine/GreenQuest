@@ -69,8 +69,8 @@ class NearbyViewModel @Inject constructor(
             "DeviceName", getApplication<Application>().packageName, connectionLifecycleCallback, advertisingOptions
         ).addOnSuccessListener {
             _status.value = "Advertising..."
-        }.addOnFailureListener {
-            _status.value = "Advertising failed"
+        }.addOnFailureListener { e ->
+            _status.value = "Advertising failed: ${e.message}"
         }
     }
 
@@ -89,8 +89,8 @@ class NearbyViewModel @Inject constructor(
             }, discoveryOptions
         ).addOnSuccessListener {
             _status.value = "Discovering..."
-        }.addOnFailureListener {
-            _status.value = "Discovery failed"
+        }.addOnFailureListener { e ->
+            _status.value = "Discovery failed: ${e.message}"
         }
     }
 }
