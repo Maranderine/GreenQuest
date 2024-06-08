@@ -8,6 +8,7 @@ import de.hsb.greenquest.data.local.entity.LocalChallengeEntity
 import de.hsb.greenquest.data.repository.toExternal
 import de.hsb.greenquest.data.repository.toLocal
 import de.hsb.greenquest.domain.model.Challenge
+import de.hsb.greenquest.domain.usecase.EventManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,7 +17,10 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class ChallengeViewModel@Inject constructor(private val challengeRepository: ChallengeRepository) : ViewModel() {
+class ChallengeViewModel@Inject constructor(
+    private val challengeRepository: ChallengeRepository,
+    private val eventManager: EventManager
+) : ViewModel() {
 //class ChallengeViewModel() : ViewModel() {
 
     val formater = java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy")
@@ -25,7 +29,6 @@ class ChallengeViewModel@Inject constructor(private val challengeRepository: Cha
     private var _challengeList: MutableStateFlow<List<LocalChallengeEntity>> = MutableStateFlow(listOf<LocalChallengeEntity>())
 
     val challengeList: StateFlow<List<LocalChallengeEntity>> = _challengeList.asStateFlow()
-
 
     init {
         viewModelScope.launch {
@@ -40,7 +43,7 @@ class ChallengeViewModel@Inject constructor(private val challengeRepository: Cha
         }
     }
     suspend fun insert(){
-        val challenge: Challenge = Challenge(0, "this is a test", "rose",7, 3, "date")
+        val challenge: Challenge = Challenge(0, "this is a test to see how a very long description would look like as a card", "this is a test to see how a very long description would look like as a card",7, 3, "date")
         challengeRepository.insertChallenge(challenge)
     }
 

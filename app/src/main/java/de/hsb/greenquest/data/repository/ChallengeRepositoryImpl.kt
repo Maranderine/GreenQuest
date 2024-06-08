@@ -14,6 +14,10 @@ class ChallengeRepositoryImpl@Inject constructor(
         return challengeDao.getChallengesStream()
     }
 
+    override fun getActiveChallenges(): List<LocalChallengeEntity> {
+        return challengeDao.getActiveChallenges()
+    }
+
     override fun getActiveChallengesStream(): Flow<List<LocalChallengeEntity>> {
         return challengeDao.getActiveChallengesStream()
     }

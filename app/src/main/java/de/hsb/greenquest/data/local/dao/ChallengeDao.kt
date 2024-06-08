@@ -33,6 +33,9 @@ interface ChallengeDao {
     @Query("SELECT * from challenges WHERE date IS NOT NUll")
     fun getActiveChallengesStream(): Flow<List<LocalChallengeEntity>>
 
+    @Query("SELECT * from challenges WHERE date IS NOT NUll")
+    fun getActiveChallenges(): List<LocalChallengeEntity>
+
     @Query(
         """SELECT * from challenges
 ORDER BY RANDOM()
