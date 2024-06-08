@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -46,6 +47,23 @@ import de.hsb.greenquest.ui.viewmodel.PortfolioViewModel
 
 @Composable
 fun PortfolioScreen(navController: NavController) {
+
+    var categorys = listOf(
+        "Recent",
+        "Favorite",
+        "Laubbäume",
+        "Nadelbäume",
+        "Blumen",
+        "Gräser",
+        "Sträucher",
+        "Kräuter",
+        "Gemüse",
+        "Obst",
+        "Farne",
+        "Flechten",
+        "Moose"
+    )
+
     Column(
         modifier = Modifier
             .padding(MaterialTheme.spacing.small)
@@ -57,35 +75,58 @@ fun PortfolioScreen(navController: NavController) {
         //PortfolioCategory(title = "Recent", names = test)
         val plantList by portfolioViewModel.plantListFlow.collectAsStateWithLifecycle()
 
-//        LazyRow {
-//            items(plantList.size) { index ->
-//                PortfolioElement(plant = plantList[index])
-//            }
-//        }
-
-        Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
-        LazyVerticalGrid(columns = GridCells.Adaptive(116.dp), content = {
-            items(plantList.size) { index ->
-                PortfolioElement(plantList[index], navController, portfolioViewModel)
+        LazyColumn {
+            items(categorys.size) { index ->
+                PortfolioCategory(
+                    title = categorys[index],
+                    navController = navController,
+                    portfolioViewModel = portfolioViewModel,
+                    plantList = plantList
+                )
             }
-        })
+        }
 
-
+//        Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
+//        LazyVerticalGrid(columns = GridCells.Adaptive(116.dp), content = {
+//            items(plantList.size) { index ->
+//                PortfolioElement(plantList[index], navController, portfolioViewModel)
+//            }
+//        })
 
     }
 }
 
 @Composable
-fun PortfolioCategory(title: String, navController: NavController, portfolioViewModel: PortfolioViewModel) {
-    Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
-    Text(
-        text = title,
-        style = TextStyle(textDecoration = TextDecoration.Underline),
-        modifier = Modifier
-            .clickable {
-                //navController.navigate(Screen.PortfolioCategoryScreen.route)
+fun PortfolioCategory(
+    title: String,
+    navController: NavController,
+    portfolioViewModel: PortfolioViewModel,
+    plantList: List<Plant>
+) {
+    Column() {
+        Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+        Text(
+            text = title,
+            style = TextStyle(textDecoration = TextDecoration.Underline),
+            modifier = Modifier
+                .clickable {
+                    //navController.navigate(Screen.PortfolioCategoryScreen.route)
+                }
+        )
+        Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
+        LazyRow {
+            val filteredPlants = if (title == "Favorite") {
+                plantList.filter { it.favorite }
+            } else {
+                plantList
             }
-    )
+
+            items(filteredPlants.size) { index ->
+                    PortfolioElement(filteredPlants[index], navController, portfolioViewModel)
+                    Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+            }
+        }
+    }
 }
 
 @Composable

@@ -33,6 +33,5 @@ fun GreenQuestTooAppBar(
                 }
             }
         },
-
-        )
+    )
 }
