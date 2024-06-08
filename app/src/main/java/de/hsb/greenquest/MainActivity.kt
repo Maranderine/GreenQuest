@@ -154,7 +154,7 @@ class MainActivity : ComponentActivity() {
                         },
                     ) {
                         innerPadding ->
-                        NavHost(navController = navController, startDestination = Screen.NearbyShareScreen.route, Modifier.padding(innerPadding)) {
+                        NavHost(navController = navController, startDestination = Screen.CameraScreen.route, Modifier.padding(innerPadding)) {
                             composable(route = Screen.PortfolioScreen.route) {
                                 PortfolioScreen(navController = navController)
                             }
