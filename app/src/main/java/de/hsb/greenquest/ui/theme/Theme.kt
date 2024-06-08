@@ -17,32 +17,68 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Color(0xFF4CAF50), // Green color for primary elements
-    onPrimary = Color.White, // Text on primary elements
-    secondary = Color(0xFF689F38), // Darker green for secondary elements
-    onSecondary = Color.White, // Text on secondary elements
-    background = Color(0xFF2C3E50), // Dark background color
-    onBackground = Color.White, // Text on background
-    surface = Color(0xFF34495E), // Darker surface color
-    onSurface = Color.White, // Text on surface
-    error = Color(0xFFD32F2F), // Red color for error states
-    onError = Color.White, // Text on error states
-    outline = Color(0xFFBDBDBD), // Light gray for outlines
+    primary = PrimaryDark,
+    //primaryContainer = PrimaryVariantLight,
+    onPrimary = OnPrimaryDark,
+    secondary = SecondaryDark,
+    //secondaryContainer = SecondaryVariantLight,
+    onSecondary = OnSecondaryDark,
+    tertiary = SecondaryVariantDark,
+    onTertiary = OnSecondaryDark,
+    background = BackgroundDark,
+    onBackground = OnBackgroundDark
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Color(0xFF4CAF50), // Green color for primary elements
-    onPrimary = Color.White, // Text on primary elements
-    secondary = Color(0xFF689F38), // Darker green for secondary elements
-    onSecondary = Color.White, // Text on secondary elements
-    background = Color(0xFFFDECCF), // Dark background color
-    onBackground = Color.Black, // Text on background
-    surface = Color(0xFF34495E), // Darker surface color
-    onSurface = Color.White, // Text on surface
-    error = Color(0xFFD32F2F), // Red color for error states
-    onError = Color.White, // Text on error states
-    outline = Color(0xFFBDBDBD) // Light gray for outlines
+    primary = PrimaryLight,
+    //primaryContainer = PrimaryVariantLight,
+    onPrimary = OnPrimaryLight,
+    secondary = SecondaryLight,
+    //secondaryContainer = SecondaryVariantLight,
+    onSecondary = OnSecondaryLight,
+    tertiary = SecondaryVariantLight,
+    onTertiary = OnSecondaryLight,
+    background = BackgroundLight,
+    onBackground = OnBackgroundLight
+
+    /* Other default colors to override
+    background = Color(0xFFFFFBFE),
+    surface = Color(0xFFFFFBFE),
+    onPrimary = Color.White,
+    onSecondary = Color.White,
+    onTertiary = Color.White,
+    onBackground = Color(0xFF1C1B1F),
+    onSurface = Color(0xFF1C1B1F),
+    */
 )
+
+//private val DarkColorScheme = darkColorScheme(
+//    primary = Color(0xFF4CAF50), // Green color for primary elements
+//    onPrimary = Color.White, // Text on primary elements
+//    secondary = Color(0xFF689F38), // Darker green for secondary elements
+//    onSecondary = Color.White, // Text on secondary elements
+//    background = Color(0xFF2C3E50), // Dark background color
+//    onBackground = Color.White, // Text on background
+//    surface = Color(0xFF34495E), // Darker surface color
+//    onSurface = Color.White, // Text on surface
+//    error = Color(0xFFD32F2F), // Red color for error states
+//    onError = Color.White, // Text on error states
+//    outline = Color(0xFFBDBDBD), // Light gray for outlines
+//)
+//
+//private val LightColorScheme = lightColorScheme(
+//    primary = Color(0xFF4CAF50), // Green color for primary elements
+//    onPrimary = Color.White, // Text on primary elements
+//    secondary = Color(0xFF689F38), // Darker green for secondary elements
+//    onSecondary = Color.White, // Text on secondary elements
+//    background = Color(0xFFFDECCF), // Dark background color
+//    onBackground = Color.Black, // Text on background
+//    surface = Color(0xFF34495E), // Darker surface color
+//    onSurface = Color.White, // Text on surface
+//    error = Color(0xFFD32F2F), // Red color for error states
+//    onError = Color.White, // Text on error states
+//    outline = Color(0xFFBDBDBD) // Light gray for outlines
+//)
 
 //private val LightColorScheme = lightColorScheme(
 //    primary = Purple40,

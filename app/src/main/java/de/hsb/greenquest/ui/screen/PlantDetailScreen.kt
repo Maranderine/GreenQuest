@@ -2,11 +2,13 @@ package de.hsb.greenquest.ui.screen
 
 import android.util.Log
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -39,6 +41,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
@@ -66,6 +69,7 @@ fun PlantDetailScreen(navController: NavController, name: String?) {
     Column(
         modifier = Modifier
             .padding(MaterialTheme.spacing.small)
+            .padding(horizontal = 40.dp)
             .fillMaxSize()
     ) {
         Row(
@@ -84,7 +88,20 @@ fun PlantDetailScreen(navController: NavController, name: String?) {
             }) {
                 ToggleIconButton(favorite = plant?.favorite ?: false)
             }
+            IconButton(
+                onClick = {
+                    portfolioViewModel.openDeleteDialog = true
+                },
+                //modifier = Modifier.align(Alignment.TopEnd)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Delete ,
+                    contentDescription = "",
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+            }
         }
+
         Image(
             painter = rememberAsyncImagePainter(model = plant?.imagePath),
             contentDescription = "",
@@ -92,54 +109,51 @@ fun PlantDetailScreen(navController: NavController, name: String?) {
             modifier = Modifier
                 .padding(0.dp)
                 .fillMaxWidth()
+                .clip(RoundedCornerShape(30.dp))
         )
+        //Spacer(modifier = Modifier.size(MaterialTheme.spacing.large))
+        Spacer(modifier = Modifier.size(MaterialTheme.spacing.medium))
         Box(Modifier.fillMaxSize()) {
-            IconButton(
-                onClick = { portfolioViewModel.openTextFieldDialog = true },
-                modifier = Modifier.align(Alignment.TopEnd)
-            ) {
-                if (plant?.description == "") {
-                    Icon(
-                        imageVector = Icons.Filled.Add,
-                        contentDescription = "",
-                        tint = MaterialTheme.colorScheme.primary,
-                    )
-                }else {
-                    Icon(
-                        imageVector = Icons.Filled.Edit ,
-                        contentDescription = "",
-                        tint = MaterialTheme.colorScheme.primary,
-                    )
-                }
-            }
             Column(
                 modifier = Modifier.align(Alignment.TopStart)
             ) {
                 Text(
                     text = "Common Names: " + (plant?.commonNames.toString()  ?: ""),
                 )
-                Spacer(modifier = Modifier.size(MaterialTheme.spacing.extraSmall))
+                Spacer(modifier = Modifier.size(MaterialTheme.spacing.medium))
                 Text(
                     text = "Species: " + (plant?.species  ?: "")
                 )
-                Spacer(modifier = Modifier.size(MaterialTheme.spacing.extraSmall))
-                if (plant?.description != "") {
-                    Text(
-                        text = "Notes: " + (plant?.description ?: "")
-                    )
+                Spacer(modifier = Modifier.size(MaterialTheme.spacing.medium))
+                Box(
+                    modifier = Modifier
+                        .background(MaterialTheme.colorScheme.secondaryContainer)
+                        .fillMaxSize()
+                ) {
+                    IconButton(
+                        onClick = { portfolioViewModel.openTextFieldDialog = true },
+                        modifier = Modifier.align(Alignment.TopEnd)
+                    ) {
+                        if (plant?.description == "") {
+                            Icon(
+                                imageVector = Icons.Filled.Add,
+                                contentDescription = "",
+                                tint = MaterialTheme.colorScheme.primary,
+                            )
+                        }else {
+                            Icon(
+                                imageVector = Icons.Filled.Edit ,
+                                contentDescription = "",
+                                tint = MaterialTheme.colorScheme.primary,
+                            )
+                        }
+                    }
+                    if (plant?.description != "") {
+                        Text(
+                            text = "Notes: " + (plant?.description ?: ""),
+                        )
+                    }
                 }
-            }
-            IconButton(
-                onClick = {
-                    portfolioViewModel.openDeleteDialog = true
-                },
-                modifier = Modifier.align(Alignment.BottomEnd)
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Delete ,
-                    contentDescription = "",
-                    tint = MaterialTheme.colorScheme.primary,
-                )
             }
         }
 
@@ -273,6 +287,8 @@ fun DialogWithTextInput(
                         .padding(bottom = MaterialTheme.spacing.medium),
                     colors = TextFieldDefaults.textFieldColors(
                         containerColor = MaterialTheme.colorScheme.background,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onBackground,
+                        focusedTextColor = MaterialTheme.colorScheme.onBackground,
                     )
                 )
                 Row(
