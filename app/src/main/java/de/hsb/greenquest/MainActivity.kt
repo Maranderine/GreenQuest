@@ -111,6 +111,12 @@ class MainActivity : ComponentActivity() {
             if (!hasInternetPermission) {
                 permissionsToRequest.add(internetPermission)
             }
+            if (!hasAccessWifiStatePermission) {
+                permissionsToRequest.add(accessWifiStatePermission)
+            }
+            if (!hasChangeWifiStatePermission) {
+                permissionsToRequest.add(changeWifiStatePermission)
+            }
 
             requestPermissionsLauncher.launch(permissionsToRequest.toTypedArray())
         }
@@ -139,7 +145,7 @@ class MainActivity : ComponentActivity() {
                         },
                     ) {
                         innerPadding ->
-                        NavHost(navController = navController, startDestination = Screen.CameraScreen.route, Modifier.padding(innerPadding)) {
+                        NavHost(navController = navController, startDestination = Screen.NearbyShareScreen.route, Modifier.padding(innerPadding)) {
                             composable(route = Screen.PortfolioScreen.route) {
                                 PortfolioScreen(navController = navController)
                             }
