@@ -9,9 +9,23 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.core.content.ContextCompat
@@ -23,6 +37,7 @@ import androidx.navigation.navArgument
 import dagger.hilt.android.AndroidEntryPoint
 import de.hsb.greenquest.ui.Camera.CameraPreviewScreen
 import de.hsb.greenquest.ui.navigation.BottomNavigationBar
+import de.hsb.greenquest.ui.navigation.GreenQuestTooAppBar
 import de.hsb.greenquest.ui.navigation.Screen
 import de.hsb.greenquest.ui.screen.ChallengeScreen
 import de.hsb.greenquest.ui.screen.PlantDetailScreen
@@ -82,6 +97,7 @@ class MainActivity : ComponentActivity() {
 
 
 
+    @OptIn(ExperimentalMaterial3Api::class)
     private fun setCameraPreview() {
         setContent {
             GreenQuestTheme {
@@ -92,7 +108,13 @@ class MainActivity : ComponentActivity() {
                         .background(Color(0xFFB69DF8)), color = MaterialTheme.colorScheme.background
                 ) {
                     val navController = rememberNavController()
+                    var title by remember { mutableStateOf(Screen.CameraScreen.title) }
                     Scaffold(
+                        topBar = {
+                            GreenQuestTooAppBar(title = title, canNavigateBack = navController.previousBackStackEntry != null) {
+                                navController.popBackStack()
+                            }
+                        },
                         bottomBar = {
                             BottomNavigationBar(navController = navController)
                         },
@@ -103,18 +125,22 @@ class MainActivity : ComponentActivity() {
                         innerPadding ->
                         NavHost(navController = navController, startDestination = Screen.CameraScreen.route, Modifier.padding(innerPadding)) {
                             composable(route = Screen.PortfolioScreen.route) {
+                                title = Screen.PortfolioScreen.title
                                 PortfolioScreen(navController = navController)
                             }
                             composable(
                                 route = Screen.PlantDetailScreen.route + "/{plantName}",
                                 arguments = listOf(navArgument("plantName") { type = NavType.StringType })
                             ) {
+                                title = Screen.PlantDetailScreen.title
                                 PlantDetailScreen(navController = navController, name = it.arguments?.getString("plantName"))
                             }
                             composable(route = Screen.CameraScreen.route) {
+                                title = Screen.CameraScreen.title
                                 CameraPreviewScreen(navController = navController)
                             }
                             composable(route = Screen.ChallengeScreen.route) {
+                                title = Screen.ChallengeScreen.title
                                 ChallengeScreen(name = "Android")
                             }
                         }
