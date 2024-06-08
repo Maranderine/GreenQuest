@@ -1,7 +1,9 @@
 package de.hsb.greenquest
 
+import NearbyConnectionScreen
 import android.Manifest
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -28,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -60,18 +63,41 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Request camera, storage, and location permissions
+
         val cameraPermission = Manifest.permission.CAMERA
         val storagePermission = Manifest.permission.READ_MEDIA_IMAGES
         val fineLocationPermission = Manifest.permission.ACCESS_FINE_LOCATION
         val coarseLocationPermission = Manifest.permission.ACCESS_COARSE_LOCATION
+        val bluetoothPermission = Manifest.permission.BLUETOOTH
+        val bluetoothAdminPermission = Manifest.permission.BLUETOOTH_ADMIN
+        val bluetoothScanPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) Manifest.permission.BLUETOOTH_SCAN else null
+        val bluetoothAdvertisePermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) Manifest.permission.BLUETOOTH_ADVERTISE else null
+        val bluetoothConnectPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) Manifest.permission.BLUETOOTH_CONNECT else null
+        val nearbyWifiDevicesPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) Manifest.permission.NEARBY_WIFI_DEVICES else null
+        val internetPermission = Manifest.permission.INTERNET
+        val accessWifiStatePermission = Manifest.permission.ACCESS_WIFI_STATE
+        val changeWifiStatePermission = Manifest.permission.CHANGE_WIFI_STATE
 
         val hasCameraPermission = ContextCompat.checkSelfPermission(this, cameraPermission) == PackageManager.PERMISSION_GRANTED
         val hasStoragePermission = ContextCompat.checkSelfPermission(this, storagePermission) == PackageManager.PERMISSION_GRANTED
         val hasFineLocationPermission = ContextCompat.checkSelfPermission(this, fineLocationPermission) == PackageManager.PERMISSION_GRANTED
         val hasCoarseLocationPermission = ContextCompat.checkSelfPermission(this, coarseLocationPermission) == PackageManager.PERMISSION_GRANTED
+        val hasBluetoothPermission = ContextCompat.checkSelfPermission(this, bluetoothPermission) == PackageManager.PERMISSION_GRANTED
+        val hasBluetoothAdminPermission = ContextCompat.checkSelfPermission(this, bluetoothAdminPermission) == PackageManager.PERMISSION_GRANTED
+        val hasBluetoothScanPermission = bluetoothScanPermission?.let { ContextCompat.checkSelfPermission(this, it) } == PackageManager.PERMISSION_GRANTED
+        val hasBluetoothAdvertisePermission = bluetoothAdvertisePermission?.let { ContextCompat.checkSelfPermission(this, it) } == PackageManager.PERMISSION_GRANTED
+        val hasBluetoothConnectPermission = bluetoothConnectPermission?.let { ContextCompat.checkSelfPermission(this, it) } == PackageManager.PERMISSION_GRANTED
+        val hasNearbyWifiDevicesPermission = nearbyWifiDevicesPermission?.let { ContextCompat.checkSelfPermission(this, it) } == PackageManager.PERMISSION_GRANTED
+        val hasInternetPermission = ContextCompat.checkSelfPermission(this, internetPermission) == PackageManager.PERMISSION_GRANTED
+        val hasAccessWifiStatePermission = ContextCompat.checkSelfPermission(this, accessWifiStatePermission) == PackageManager.PERMISSION_GRANTED
+        val hasChangeWifiStatePermission = ContextCompat.checkSelfPermission(this, changeWifiStatePermission) == PackageManager.PERMISSION_GRANTED
 
-        if (hasCameraPermission && hasStoragePermission && (hasFineLocationPermission || hasCoarseLocationPermission)) {
+        if (hasCameraPermission && hasStoragePermission && (hasFineLocationPermission || hasCoarseLocationPermission)
+            && hasBluetoothPermission && hasBluetoothAdminPermission && (bluetoothScanPermission == null || hasBluetoothScanPermission!!)
+            && (bluetoothAdvertisePermission == null || hasBluetoothAdvertisePermission!!)
+            && (bluetoothConnectPermission == null || hasBluetoothConnectPermission!!)
+            && (nearbyWifiDevicesPermission == null || hasNearbyWifiDevicesPermission!!)
+            && hasInternetPermission && hasAccessWifiStatePermission && hasChangeWifiStatePermission) {
             // All required permissions are granted
             setCameraPreview()
         } else {
@@ -88,6 +114,33 @@ class MainActivity : ComponentActivity() {
             }
             if (!hasCoarseLocationPermission) {
                 permissionsToRequest.add(coarseLocationPermission)
+            }
+            if (!hasBluetoothPermission) {
+                permissionsToRequest.add(bluetoothPermission)
+            }
+            if (!hasBluetoothAdminPermission) {
+                permissionsToRequest.add(bluetoothAdminPermission)
+            }
+            if (bluetoothScanPermission != null && !hasBluetoothScanPermission!!) {
+                permissionsToRequest.add(bluetoothScanPermission)
+            }
+            if (bluetoothAdvertisePermission != null && !hasBluetoothAdvertisePermission!!) {
+                permissionsToRequest.add(bluetoothAdvertisePermission)
+            }
+            if (bluetoothConnectPermission != null && !hasBluetoothConnectPermission!!) {
+                permissionsToRequest.add(bluetoothConnectPermission)
+            }
+            if (nearbyWifiDevicesPermission != null && !hasNearbyWifiDevicesPermission!!) {
+                permissionsToRequest.add(nearbyWifiDevicesPermission)
+            }
+            if (!hasInternetPermission) {
+                permissionsToRequest.add(internetPermission)
+            }
+            if (!hasAccessWifiStatePermission) {
+                permissionsToRequest.add(accessWifiStatePermission)
+            }
+            if (!hasChangeWifiStatePermission) {
+                permissionsToRequest.add(changeWifiStatePermission)
             }
 
             requestPermissionsLauncher.launch(permissionsToRequest.toTypedArray())
@@ -146,6 +199,9 @@ class MainActivity : ComponentActivity() {
                             }
                             composable(route = Screen.SearchCardsScreen.route) {
                                 SearchCardsScreen(navController = navController)
+                            }
+                            composable(route = Screen.NearbyShareScreen.route) {
+                                NearbyConnectionScreen()
                             }
                         }
                     }
