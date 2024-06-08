@@ -16,7 +16,9 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavController
+import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.compose.currentBackStackEntryAsState
 import de.hsb.greenquest.R
 
 data class BottomNavigationItem(
@@ -29,45 +31,40 @@ data class BottomNavigationItem(
 fun BottomNavigationBar(navController: NavController) {
     val items = listOf(
         BottomNavigationItem(
-            title = "Camera",
+            title = Screen.CameraScreen.title,
             route = Screen.CameraScreen.route,
             icon = painterResource(id = R.drawable.kamera)
         ),
         BottomNavigationItem(
-            title = "Portfolio",
+            title = Screen.PortfolioScreen.title,
             route = Screen.PortfolioScreen.route,
             icon = painterResource(id = R.drawable.photo_album)
         ),
         BottomNavigationItem(
-            title = "Challenges",
+            title = Screen.ChallengeScreen.title,
             route = Screen.ChallengeScreen.route,
             icon = painterResource(id = R.drawable.flash_card)
         ),
     )
-    var selectedItemIndex by rememberSaveable() {
-        mutableStateOf(0)
-    }
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination
+
     NavigationBar {
-        items.forEachIndexed { index, bottomNavItem->
+        items.forEach { item ->
+            val isSelected = currentDestination?.hierarchy?.any { it.route == item.route } == true
             NavigationBarItem(
-                selected = selectedItemIndex == index,
+                selected = isSelected,
                 onClick = {
-                    selectedItemIndex = index
-
-                    navController.navigate(bottomNavItem.route) {
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            saveState = true
-                        }
-
+                    navController.popBackStack(route = item.route, inclusive = false)
+                    navController.navigate(item.route) {
                         launchSingleTop = true
-                        restoreState = true
                     }
                 },
                 icon = {
-                    Image(bottomNavItem.icon, contentDescription = "")
+                    Image(item.icon, contentDescription = item.title)
                 },
                 label = {
-                    Text(text = bottomNavItem.title)
+                    Text(text = item.title)
                 }
             )
         }
