@@ -10,6 +10,8 @@ interface ChallengeRepository {
      */
     fun getAllChallengesStream(): Flow<List<LocalChallengeEntity>>
 
+    fun getActiveChallenges(): List<LocalChallengeEntity>
+
     fun getActiveChallengesStream(): Flow<List<LocalChallengeEntity>>
 
     /**

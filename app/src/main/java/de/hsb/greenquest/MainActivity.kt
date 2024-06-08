@@ -27,6 +27,7 @@ import de.hsb.greenquest.ui.navigation.Screen
 import de.hsb.greenquest.ui.screen.ChallengeScreen
 import de.hsb.greenquest.ui.screen.PlantDetailScreen
 import de.hsb.greenquest.ui.screen.PortfolioScreen
+import de.hsb.greenquest.ui.screen.SearchCardsScreen
 import de.hsb.greenquest.ui.theme.GreenQuestTheme
 
 @AndroidEntryPoint
@@ -106,7 +107,10 @@ class MainActivity : ComponentActivity() {
                                 CameraPreviewScreen(navController = navController)
                             }
                             composable(route = Screen.ChallengeScreen.route) {
-                                ChallengeScreen(name = "Android")
+                                ChallengeScreen(navController = navController)
+                            }
+                            composable(route = Screen.SearchCardsScreen.route) {
+                                SearchCardsScreen(navController = navController)
                             }
                         }
                     }

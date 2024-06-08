@@ -43,6 +43,11 @@ fun BottomNavigationBar(navController: NavController) {
             route = Screen.ChallengeScreen.route,
             icon = painterResource(id = R.drawable.photo_album)
         ),
+        BottomNavigationItem(
+            title = "SearchCards",
+            route = Screen.SearchCardsScreen.route,
+            icon = painterResource(id = R.drawable.baseline_check_24)
+        ),
     )
     var selectedItemIndex by rememberSaveable() {
         mutableStateOf(0)
