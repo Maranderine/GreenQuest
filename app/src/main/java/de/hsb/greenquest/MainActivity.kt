@@ -3,6 +3,7 @@ package de.hsb.greenquest
 import NearbyConnectionScreen
 import android.Manifest
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -46,16 +47,17 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Request camera, storage, and location permissions
+
         val cameraPermission = Manifest.permission.CAMERA
         val storagePermission = Manifest.permission.READ_MEDIA_IMAGES
         val fineLocationPermission = Manifest.permission.ACCESS_FINE_LOCATION
         val coarseLocationPermission = Manifest.permission.ACCESS_COARSE_LOCATION
         val bluetoothPermission = Manifest.permission.BLUETOOTH
         val bluetoothAdminPermission = Manifest.permission.BLUETOOTH_ADMIN
-        val bluetoothScanPermission = Manifest.permission.BLUETOOTH_SCAN
-        val bluetoothAdvertisePermission = Manifest.permission.BLUETOOTH_ADVERTISE
-        val bluetoothConnectPermission = Manifest.permission.BLUETOOTH_CONNECT
+        val bluetoothScanPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) Manifest.permission.BLUETOOTH_SCAN else null
+        val bluetoothAdvertisePermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) Manifest.permission.BLUETOOTH_ADVERTISE else null
+        val bluetoothConnectPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) Manifest.permission.BLUETOOTH_CONNECT else null
+        val nearbyWifiDevicesPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) Manifest.permission.NEARBY_WIFI_DEVICES else null
         val internetPermission = Manifest.permission.INTERNET
         val accessWifiStatePermission = Manifest.permission.ACCESS_WIFI_STATE
         val changeWifiStatePermission = Manifest.permission.CHANGE_WIFI_STATE
@@ -66,16 +68,20 @@ class MainActivity : ComponentActivity() {
         val hasCoarseLocationPermission = ContextCompat.checkSelfPermission(this, coarseLocationPermission) == PackageManager.PERMISSION_GRANTED
         val hasBluetoothPermission = ContextCompat.checkSelfPermission(this, bluetoothPermission) == PackageManager.PERMISSION_GRANTED
         val hasBluetoothAdminPermission = ContextCompat.checkSelfPermission(this, bluetoothAdminPermission) == PackageManager.PERMISSION_GRANTED
-        val hasBluetoothScanPermission = ContextCompat.checkSelfPermission(this, bluetoothScanPermission) == PackageManager.PERMISSION_GRANTED
-        val hasBluetoothAdvertisePermission = ContextCompat.checkSelfPermission(this, bluetoothAdvertisePermission) == PackageManager.PERMISSION_GRANTED
-        val hasBluetoothConnectPermission = ContextCompat.checkSelfPermission(this, bluetoothConnectPermission) == PackageManager.PERMISSION_GRANTED
+        val hasBluetoothScanPermission = bluetoothScanPermission?.let { ContextCompat.checkSelfPermission(this, it) } == PackageManager.PERMISSION_GRANTED
+        val hasBluetoothAdvertisePermission = bluetoothAdvertisePermission?.let { ContextCompat.checkSelfPermission(this, it) } == PackageManager.PERMISSION_GRANTED
+        val hasBluetoothConnectPermission = bluetoothConnectPermission?.let { ContextCompat.checkSelfPermission(this, it) } == PackageManager.PERMISSION_GRANTED
+        val hasNearbyWifiDevicesPermission = nearbyWifiDevicesPermission?.let { ContextCompat.checkSelfPermission(this, it) } == PackageManager.PERMISSION_GRANTED
         val hasInternetPermission = ContextCompat.checkSelfPermission(this, internetPermission) == PackageManager.PERMISSION_GRANTED
         val hasAccessWifiStatePermission = ContextCompat.checkSelfPermission(this, accessWifiStatePermission) == PackageManager.PERMISSION_GRANTED
         val hasChangeWifiStatePermission = ContextCompat.checkSelfPermission(this, changeWifiStatePermission) == PackageManager.PERMISSION_GRANTED
 
         if (hasCameraPermission && hasStoragePermission && (hasFineLocationPermission || hasCoarseLocationPermission)
-            && hasBluetoothPermission && hasBluetoothAdminPermission && hasBluetoothScanPermission
-            && hasBluetoothAdvertisePermission && hasBluetoothConnectPermission && hasInternetPermission) {
+            && hasBluetoothPermission && hasBluetoothAdminPermission && (bluetoothScanPermission == null || hasBluetoothScanPermission!!)
+            && (bluetoothAdvertisePermission == null || hasBluetoothAdvertisePermission!!)
+            && (bluetoothConnectPermission == null || hasBluetoothConnectPermission!!)
+            && (nearbyWifiDevicesPermission == null || hasNearbyWifiDevicesPermission!!)
+            && hasInternetPermission && hasAccessWifiStatePermission && hasChangeWifiStatePermission) {
             // All required permissions are granted
             setCameraPreview()
         } else {
@@ -99,14 +105,17 @@ class MainActivity : ComponentActivity() {
             if (!hasBluetoothAdminPermission) {
                 permissionsToRequest.add(bluetoothAdminPermission)
             }
-            if (!hasBluetoothScanPermission) {
+            if (bluetoothScanPermission != null && !hasBluetoothScanPermission!!) {
                 permissionsToRequest.add(bluetoothScanPermission)
             }
-            if (!hasBluetoothAdvertisePermission) {
+            if (bluetoothAdvertisePermission != null && !hasBluetoothAdvertisePermission!!) {
                 permissionsToRequest.add(bluetoothAdvertisePermission)
             }
-            if (!hasBluetoothConnectPermission) {
+            if (bluetoothConnectPermission != null && !hasBluetoothConnectPermission!!) {
                 permissionsToRequest.add(bluetoothConnectPermission)
+            }
+            if (nearbyWifiDevicesPermission != null && !hasNearbyWifiDevicesPermission!!) {
+                permissionsToRequest.add(nearbyWifiDevicesPermission)
             }
             if (!hasInternetPermission) {
                 permissionsToRequest.add(internetPermission)
