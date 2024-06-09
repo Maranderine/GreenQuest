@@ -32,7 +32,7 @@ object AppModule {
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context) = Room.databaseBuilder(
         context, ChallengeDatabas::class.java, GREEN_QUEST_DATABASE
-    ).fallbackToDestructiveMigration().build()
+    ).createFromAsset("database\\challenge.db").fallbackToDestructiveMigration().build()
 
     @Provides
     @Singleton
