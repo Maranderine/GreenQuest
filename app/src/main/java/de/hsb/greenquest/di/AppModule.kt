@@ -2,6 +2,8 @@ package de.hsb.greenquest.di
 
 import android.content.Context
 import androidx.room.Room
+import com.google.firebase.FirebaseApp
+import com.google.firebase.ktx.Firebase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -15,6 +17,7 @@ import de.hsb.greenquest.data.local.utils.DataBaseConstants.GREEN_QUEST_DATABASE
 import de.hsb.greenquest.data.network.PlantNetDataSource
 import de.hsb.greenquest.data.repository.ChallengeRepositoryImpl
 import de.hsb.greenquest.data.local.mediastore.PlantPictureMediaStoreLoader
+import de.hsb.greenquest.data.repository.ChallengeCardRepository
 import de.hsb.greenquest.data.repository.PlantPictureRepositoryImpl
 import de.hsb.greenquest.data.repository.PlantNetRepositoryImpl
 import de.hsb.greenquest.domain.repository.ChallengeRepository
@@ -22,6 +25,7 @@ import de.hsb.greenquest.domain.repository.PlantNetRepository
 import de.hsb.greenquest.domain.repository.PlantPictureRepository
 import de.hsb.greenquest.domain.usecase.EventManager
 import de.hsb.greenquest.domain.usecase.TakePictureUseCase
+import javax.annotation.Nullable
 import javax.inject.Singleton
 
 @Module
@@ -30,13 +34,14 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideDatabase(@ApplicationContext context: Context) = Room.databaseBuilder(
-        context, ChallengeDatabas::class.java, GREEN_QUEST_DATABASE
-    ).createFromAsset("database\\challenge.db").fallbackToDestructiveMigration().build()
+    fun provideDatabase(@ApplicationContext context: Context) =
+        Room.databaseBuilder(context, ChallengeDatabas::class.java, GREEN_QUEST_DATABASE)
+            .createFromAsset("database/challenge.db")
+            .fallbackToDestructiveMigration().build()
 
     @Provides
     @Singleton
-    fun provideEventManager(): EventManager{
+    fun provideEventManager(): EventManager {
         return EventManager()
     }
 
@@ -68,7 +73,8 @@ object AppModule {
     ): PlantPictureRepository {
         return PlantPictureRepositoryImpl(
             plantPictureDao = dao,
-            plantPictureMediaStoreLoader = plantPictureMediaStoreLoader)
+            plantPictureMediaStoreLoader = plantPictureMediaStoreLoader
+        )
     }
 
     @Provides
@@ -92,4 +98,19 @@ object AppModule {
     fun provideChallengeRepository(dao: ChallengeDao): ChallengeRepository {
         return ChallengeRepositoryImpl(dao)
     }
+
+    @Nullable
+    @Provides
+    @Singleton
+    fun provideChallengeCardRepository(firebaseApp: FirebaseApp?): ChallengeCardRepository?{
+        return ChallengeCardRepository(firebaseApp)
+    }
+
+    @Nullable
+    @Provides
+    @Singleton
+    fun provideFirebase(@ApplicationContext context: Context): FirebaseApp? {
+        return FirebaseApp.initializeApp(context)
+    }
+
 }

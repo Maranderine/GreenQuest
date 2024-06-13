@@ -32,6 +32,7 @@ class PlantPictureRepositoryImpl @Inject constructor(
     }
 
     override suspend fun updatePlantPicture(plant: Plant) {
+        print("INSIDE UPDATE FUNCTION")
         plantPictureDao.updatePlantPicture(
             name = plant.name,
             favorite = plant.favorite,

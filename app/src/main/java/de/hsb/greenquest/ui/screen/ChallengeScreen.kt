@@ -14,11 +14,10 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
@@ -30,22 +29,23 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import de.hsb.greenquest.ui.viewmodel.ChallengeViewModel
 import de.hsb.greenquest.R
-import de.hsb.greenquest.data.local.entity.LocalChallengeEntity
 import de.hsb.greenquest.data.repository.toExternal
 import de.hsb.greenquest.domain.model.Challenge
 import de.hsb.greenquest.ui.navigation.Screen
+import de.hsb.greenquest.ui.theme.OnBackgroundDark
+import de.hsb.greenquest.ui.theme.SecondaryVariantDark
 import de.hsb.greenquest.ui.theme.spacing
-import de.hsb.greenquest.ui.viewmodel.PortfolioViewModel
 import kotlinx.coroutines.launch
 
 @SuppressLint("CoroutineCreationDuringComposition")
@@ -54,6 +54,14 @@ fun ChallengeScreen(navController: NavController, modifier: Modifier = Modifier,
     val coroutineScope = rememberCoroutineScope()
     val challenges = viewModel.challengeList.collectAsState().value
 
+    val imageResource = when ((viewModel.progress.value.toFloat() / viewModel.requiredCount.value.toFloat())) {
+        in 0.0..0.2 -> R.drawable.plant0
+        in 0.2..0.4 -> R.drawable.plant1
+        in 0.4..0.6 -> R.drawable.plant2
+        in 0.6..0.8 -> R.drawable.plant3
+        in 0.8..1.1 -> R.drawable.plant4
+        else -> R.drawable.plant0
+    }
 
     Column(
         modifier = Modifier
@@ -81,14 +89,20 @@ fun ChallengeScreen(navController: NavController, modifier: Modifier = Modifier,
                     Text(text = "daily")
                 }
             }
-            Text(text = "streak: ${challenges.size}")
+            //Text(text = "streak: ${challenges.size}", color = OnBackgroundDark)
             Image(
-                modifier = Modifier.clickable { coroutineScope.launch {
-                    viewModel?.insert()
-                } },
-                painter = painterResource(R.drawable.ic_launcher_foreground),
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(200.dp)
+                    .clip(CircleShape),
+                painter = painterResource(imageResource),
                 contentDescription = "1"
             )
+            Row {
+                Text(text = viewModel.challengeList.value.toExternal().count{ it.done }.toString(), color = OnBackgroundDark)
+                Text(text = "/", color = OnBackgroundDark)
+                Text(text = viewModel.challengeList.value.toExternal().size.toString(), color = Color.White)
+            }
         }
         //Spacer(modifier = Modifier.height(16.dp))
         Row(
@@ -109,7 +123,7 @@ fun ChallengeScreen(navController: NavController, modifier: Modifier = Modifier,
                 ){
                     Image(
                         modifier = Modifier.clickable { coroutineScope.launch {
-                            viewModel?.refreshChallenges()
+                            viewModel.refreshChallenges()
                         } },
                         painter = painterResource(R.drawable.baseline_refresh_24),
                         contentDescription = "1"
@@ -145,7 +159,8 @@ fun ChallengeScreen(navController: NavController, modifier: Modifier = Modifier,
 }
 
 @Composable
-fun ChallengeCard(modifier: Modifier = Modifier, challenge: Challenge) {
+fun ChallengeCard(modifier: Modifier = Modifier.background(SecondaryVariantDark), challenge: Challenge) {
+
     Card(modifier = modifier.fillMaxWidth()){
         Row(modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween){
             Text(
@@ -178,7 +193,8 @@ fun ChallengeCard(modifier: Modifier = Modifier, challenge: Challenge) {
             }else{
                 Image(
                     painter = painterResource(R.drawable.baseline_check_24),
-                    contentDescription = "1"
+                    contentDescription = "1",
+                    contentScale = ContentScale.Crop,
                 )
             }
         }

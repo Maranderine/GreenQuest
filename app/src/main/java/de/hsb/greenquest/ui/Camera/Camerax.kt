@@ -129,6 +129,11 @@ fun CameraPreviewScreen(navController: NavController) {
                     }) {
                         Text(text = "Confirm")
                     }
+                    Button(onClick = {
+                        cameraViewModel.createChallengeCard(imagePath, "")
+                    }) {
+                        Text(text = "create Challenge Card")
+                    }
                 }
             }
         }

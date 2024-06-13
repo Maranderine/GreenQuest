@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -44,10 +45,17 @@ import de.hsb.greenquest.ui.theme.spacing
 import de.hsb.greenquest.ui.viewmodel.PortfolioViewModel
 import de.hsb.greenquest.ui.viewmodel.SearchCardsViewModel
 import kotlinx.coroutines.launch
+import java.io.File
 
 @Composable
 fun SearchCardsScreen(navController: NavController) {
     val portfolioViewModel = hiltViewModel<SearchCardsViewModel>()
+    val cards = portfolioViewModel.challengeCards.collectAsState().value
+    var testFilePath: String? = null
+    //val currIdx = portfolioViewModel.cardsIdx.collectAsState().value
+    if(cards.size > 0){
+        testFilePath = cards[0].img.absolutePath
+    }
 
     Column(
         modifier = Modifier
@@ -73,12 +81,19 @@ fun SearchCardsScreen(navController: NavController) {
         }
         Text(text = "streak: 3")
         Spacer(modifier = Modifier.size(40.dp))
-        Image(
-            modifier = Modifier.size(300.dp),
-            painter = painterResource(R.drawable.plant),
-            contentScale = ContentScale.FillWidth,
-            contentDescription = "1"
-        )
+        Box(modifier = Modifier.height(300.dp)){
+            if(testFilePath != null){
+                Image(
+                    modifier = Modifier.size(300.dp),
+                    painter = rememberAsyncImagePainter(testFilePath),
+                    //painter  = painterResource(R.drawable.baseline_check_24),
+                    contentScale = ContentScale.FillWidth,
+                    contentDescription = "1"
+                )
+            }else {
+                Text(text = "Loading...", color = Color.White)
+            }
+        }
         Spacer(modifier = Modifier.size(20.dp))
         Row(
             Modifier
@@ -149,7 +164,7 @@ fun SearchCardsScreen(navController: NavController) {
                     }
                 }
                 Image(
-                    modifier = Modifier.size(50.dp),
+                    modifier = Modifier.size(50.dp).clickable { portfolioViewModel.changeIdx(1) },
                     painter = painterResource(R.drawable.baseline_arrow_right_24),
                     contentDescription = "1"
                 )
