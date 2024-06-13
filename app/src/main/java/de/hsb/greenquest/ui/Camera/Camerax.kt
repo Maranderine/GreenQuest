@@ -11,7 +11,6 @@ import android.os.Build
 import android.provider.MediaStore
 import android.util.Log
 import android.widget.ImageView
-import android.widget.Toast
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
@@ -26,7 +25,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,7 +43,6 @@ import com.google.android.gms.location.LocationServices
 import de.hsb.greenquest.ui.navigation.Screen
 import de.hsb.greenquest.ui.viewmodel.CameraViewModel
 import java.io.File
-import java.io.IOException
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -71,8 +68,6 @@ fun CameraPreviewScreen(navController: NavController) {
     var capturedImagePath by remember { mutableStateOf<String?>(null) } // Track the captured image path
     val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
 
-    val errorState by cameraViewModel.errorState.collectAsState()
-    val navigateToNextScreen by cameraViewModel.navigateToNextScreen.collectAsState()
     var plantFileName = remember { mutableStateOf("") }
 
     LaunchedEffect(lensFacing) {
@@ -80,13 +75,6 @@ fun CameraPreviewScreen(navController: NavController) {
         cameraProvider.unbindAll()
         cameraProvider.bindToLifecycle(lifecycleOwner, cameraxSelector, preview, imageCapture)
         preview.setSurfaceProvider(previewView.surfaceProvider)
-    }
-
-    LaunchedEffect(errorState) {
-        errorState?.let {
-            Toast.makeText(context, it, Toast.LENGTH_LONG).show()
-            cameraViewModel.errorProcessed()
-        }
     }
 
     Box(contentAlignment = Alignment.BottomCenter, modifier = Modifier.fillMaxSize()) {
@@ -128,24 +116,15 @@ fun CameraPreviewScreen(navController: NavController) {
                     Button(onClick = {
                         //TODO API (imagePath)
                         //cameraViewModel.identify(imagePath)
-
                         cameraViewModel.savePicture(plantFileName.value, imagePath)
-
                         Log.d("plantFileName4", plantFileName.value)
-
-                        if (navigateToNextScreen) {
-                            navController.navigate(Screen.PortfolioScreen.route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
-                                }
-
-                                launchSingleTop = true
-                                restoreState = true
+                        navController.navigate(Screen.PortfolioScreen.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
                             }
 
-                        } else {
-                            isCameraOpen = true
-                            cameraViewModel.errorProcessed()
+                            launchSingleTop = true
+                            restoreState = true
                         }
                     }) {
                         Text(text = "Confirm")
