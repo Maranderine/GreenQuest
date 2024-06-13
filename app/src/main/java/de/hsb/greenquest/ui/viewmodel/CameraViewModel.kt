@@ -13,6 +13,8 @@ import de.hsb.greenquest.domain.repository.PlantPictureRepository
 import de.hsb.greenquest.domain.usecase.EventManager
 import de.hsb.greenquest.domain.usecase.TakePictureUseCase
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -28,10 +30,29 @@ class CameraViewModel @Inject constructor(
 
     //var plantFileName by mutableStateOf<String>("")
 
+    private val _errorState = MutableStateFlow<String?>(null)
+    val errorState = _errorState.asStateFlow()
+
+    private val _navigateToNextScreen = MutableStateFlow(false)
+    val navigateToNextScreen = _navigateToNextScreen.asStateFlow()
+
     fun savePicture(plantFileName: String, imagePath: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            takePictureUseCase.takePicture(plantFileName, imagePath)
+            try {
+                takePictureUseCase.takePicture(plantFileName, imagePath)
+                _errorState.value = null
+                _navigateToNextScreen.value = true
+            } catch (e: TakePictureUseCase.PlantIdentificationException) {
+                _errorState.value = e.message
+                _navigateToNextScreen.value = false // Prevent navigation
+            }
         }
+    }
+
+    fun errorProcessed() {
+        // Reset UI (error) state flow
+        _errorState.value = null
+        _navigateToNextScreen.value = false
     }
 
     fun identify(imagePath: String){
