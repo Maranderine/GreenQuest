@@ -18,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
@@ -88,11 +89,23 @@ fun PlantDetailScreen(navController: NavController, name: String?) {
             }) {
                 ToggleIconButton(favorite = plant?.favorite ?: false)
             }
+
+            IconButton(
+                onClick = {
+                    //TODO enable Nearby Share
+                },
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Share ,
+                    contentDescription = "",
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+            }
+
             IconButton(
                 onClick = {
                     portfolioViewModel.openDeleteDialog = true
                 },
-                //modifier = Modifier.align(Alignment.TopEnd)
             ) {
                 Icon(
                     imageVector = Icons.Filled.Delete ,

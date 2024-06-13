@@ -50,9 +50,14 @@ fun BottomNavigationBar(navController: NavController) {
             icon = painterResource(id = R.drawable.flash_card)
         ),
         BottomNavigationItem(
-            title = "SearchCards",
+            title = Screen.SearchCardsScreen.title,
             route = Screen.SearchCardsScreen.route,
             icon = painterResource(id = R.drawable.baseline_check_24)
+        ),
+        BottomNavigationItem(
+            title = Screen.NearbyShareScreen.title,
+            route = Screen.NearbyShareScreen.route,
+            icon = painterResource(id = R.drawable.flash_card)
         ),
     )
     val navBackStackEntry by navController.currentBackStackEntryAsState()

@@ -198,9 +198,11 @@ class MainActivity : ComponentActivity() {
                                 ChallengeScreen(navController = navController)
                             }
                             composable(route = Screen.SearchCardsScreen.route) {
+                                title = Screen.SearchCardsScreen.title
                                 SearchCardsScreen(navController = navController)
                             }
                             composable(route = Screen.NearbyShareScreen.route) {
+                                title = Screen.NearbyShareScreen.title
                                 NearbyConnectionScreen()
                             }
                         }
