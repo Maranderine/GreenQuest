@@ -28,9 +28,9 @@ class CameraViewModel @Inject constructor(
 
     //var plantFileName by mutableStateOf<String>("")
 
-    fun savePicture(plantFileName: String) {
+    fun savePicture(plantFileName: String, imagePath: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            takePictureUseCase.takePicture(plantFileName)
+            takePictureUseCase.takePicture(plantFileName, imagePath)
         }
     }
 

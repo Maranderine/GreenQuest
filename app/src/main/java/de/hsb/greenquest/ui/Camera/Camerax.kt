@@ -115,8 +115,8 @@ fun CameraPreviewScreen(navController: NavController) {
 
                     Button(onClick = {
                         //TODO API (imagePath)
-                        cameraViewModel.identify(imagePath)
-                        cameraViewModel.savePicture(plantFileName.value)
+                        //cameraViewModel.identify(imagePath)
+                        cameraViewModel.savePicture(plantFileName.value, imagePath)
                         Log.d("plantFileName4", plantFileName.value)
                         navController.navigate(Screen.PortfolioScreen.route) {
                             popUpTo(navController.graph.findStartDestination().id) {

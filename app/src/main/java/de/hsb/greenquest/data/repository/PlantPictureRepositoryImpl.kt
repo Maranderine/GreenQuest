@@ -35,7 +35,8 @@ class PlantPictureRepositoryImpl @Inject constructor(
         plantPictureDao.updatePlantPicture(
             name = plant.name,
             favorite = plant.favorite,
-            description = plant.description
+            description = plant.description,
+            species = plant.species
         )
     }
 

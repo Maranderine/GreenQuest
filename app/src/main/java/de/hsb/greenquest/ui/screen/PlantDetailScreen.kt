@@ -78,7 +78,7 @@ fun PlantDetailScreen(navController: NavController, name: String?) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = name?: "No Name")
+            plant?.commonNames?.first()?.let { Text(text = it)}
             IconButton(onClick = {
                 plant?.let {
                 val updatedPlant = it.copy(favorite = !it.favorite)
