@@ -19,6 +19,7 @@ import com.google.android.gms.nearby.connection.Strategy
 import javax.inject.Inject
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import de.hsb.greenquest.domain.model.Plant
 
 
 @HiltViewModel
@@ -35,9 +36,23 @@ class NearbyViewModel @Inject constructor(
     private val _endpoints = mutableStateOf(listOf<String>())
     val endpoints: State<List<String>> = _endpoints
 
+    private val _receivedDebugMessage = mutableStateOf<String>("") // State to hold received debug message
+    val receivedDebugMessage: State<String> = _receivedDebugMessage
+
+    private var messageToSend: String? = null // Message to send
+
+    private var currentEndpointId: String? = null // Store the currently connected endpoint ID
+
+    private var advertisingStarted = false // Track if advertising is currently active
+    private var discoveringStarted = false // Track if discovering is currently active
+
     private val connectionLifecycleCallback = object : ConnectionLifecycleCallback() {
         override fun onConnectionInitiated(endpointId: String, connectionInfo: ConnectionInfo) {
             connectionsClient.acceptConnection(endpointId, payloadCallback)
+            messageToSend?.let {
+                sendDebugMessage(endpointId, it)
+            }
+            currentEndpointId = endpointId
         }
 
         override fun onConnectionResult(endpointId: String, result: ConnectionResolution) {
@@ -50,27 +65,44 @@ class NearbyViewModel @Inject constructor(
 
         override fun onDisconnected(endpointId: String) {
             _status.value = "Disconnected from $endpointId"
+            currentEndpointId = null
+            stopAdvertising()
+            stopDiscovery()
         }
     }
 
     private val payloadCallback = object : PayloadCallback() {
         override fun onPayloadReceived(endpointId: String, payload: Payload) {
-            // Handle received payload
+            if (payload.type == Payload.Type.BYTES) {
+                val debugMessage = String(payload.asBytes()!!)
+                _receivedDebugMessage.value = debugMessage // Update received debug message state
+            }
         }
 
         override fun onPayloadTransferUpdate(endpointId: String, update: PayloadTransferUpdate) {
-            // Handle transfer updates
+            // Handle transfer updates if needed
         }
     }
 
-    fun startAdvertising() {
+    fun startAdvertising(message: String) {
+        messageToSend = message
         val advertisingOptions = AdvertisingOptions.Builder().setStrategy(strategy).build()
         connectionsClient.startAdvertising(
             "DeviceName", getApplication<Application>().packageName, connectionLifecycleCallback, advertisingOptions
         ).addOnSuccessListener {
             _status.value = "Advertising..."
+            advertisingStarted = true
         }.addOnFailureListener { e ->
             _status.value = "Advertising failed: ${e.message}"
+            advertisingStarted = false
+        }
+    }
+
+    fun stopAdvertising() {
+        if (advertisingStarted) {
+            connectionsClient.stopAdvertising()
+            _status.value = "Stopped advertising"
+            advertisingStarted = false
         }
     }
 
@@ -89,8 +121,32 @@ class NearbyViewModel @Inject constructor(
             }, discoveryOptions
         ).addOnSuccessListener {
             _status.value = "Discovering..."
+            discoveringStarted = true
         }.addOnFailureListener { e ->
             _status.value = "Discovery failed: ${e.message}"
+            discoveringStarted = false
         }
+    }
+
+    fun stopDiscovery() {
+        if (discoveringStarted) {
+            connectionsClient.stopDiscovery()
+            _status.value = "Stopped discovering"
+            discoveringStarted = false
+        }
+    }
+
+    fun disconnect() {
+        currentEndpointId?.let {
+            connectionsClient.disconnectFromEndpoint(it)
+            _status.value = "Disconnecting from $it..."
+            stopAdvertising()
+            stopDiscovery()
+        }
+    }
+
+    private fun sendDebugMessage(endpointId: String, message: String) {
+        val payload = Payload.fromBytes(message.toByteArray())
+        connectionsClient.sendPayload(endpointId, payload)
     }
 }
