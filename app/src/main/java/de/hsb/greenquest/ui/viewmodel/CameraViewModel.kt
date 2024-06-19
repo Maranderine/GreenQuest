@@ -1,30 +1,25 @@
 package de.hsb.greenquest.ui.viewmodel
 
-import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.FirebaseApp
-import com.google.firebase.storage.FirebaseStorage
-import com.google.firebase.storage.StorageReference
-import com.google.firebase.storage.UploadTask
 import dagger.hilt.android.lifecycle.HiltViewModel
-import de.hsb.greenquest.data.repository.ChallengeCardRepository
-import de.hsb.greenquest.domain.repository.ChallengeRepository
+import de.hsb.greenquest.data.repository.AchievementsRepositoryImpl
+import de.hsb.greenquest.data.repository.ChallengeCardRepositoryImpl
+import de.hsb.greenquest.domain.repository.DailyChallengeRepository
 import de.hsb.greenquest.domain.repository.PlantNetRepository
 import de.hsb.greenquest.domain.usecase.TakePictureUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.io.File
-import javax.annotation.Nullable
 import javax.inject.Inject
 
 
 @HiltViewModel
 class CameraViewModel @Inject constructor(
+    private val achievementsRepositoryImpl: AchievementsRepositoryImpl,
     private val takePictureUseCase: TakePictureUseCase,
     private val plantNetRepository: PlantNetRepository,
-    private val challengeRepository: ChallengeRepository,
-    private val challengeCardRepository: ChallengeCardRepository?
+    private val dailyChallengeRepository: DailyChallengeRepository,
+    private val challengeCardRepositoryImpl: ChallengeCardRepositoryImpl
     //private val firebaseApp: FirebaseApp?,
 ): ViewModel() {
 
@@ -42,11 +37,7 @@ class CameraViewModel @Inject constructor(
     fun identify(imagePath: String){
         viewModelScope.launch(Dispatchers.IO) {
            ( plantNetRepository.identifyPlant(imagePath))?.let { plant ->
-               val activeChallenges = challengeRepository.getActiveChallenges()
-               activeChallenges.forEach{
-                   println("compare ${it.Plant} == ${plant.name}")
-                   if(it.Plant == plant.name){challengeRepository.updateChallenge(it.copy(progress = it.progress+1))}
-               }
+               achievementsRepositoryImpl.checkChallenges(plant)
            }
         }
     }
@@ -80,9 +71,8 @@ class CameraViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             plantNetRepository.identifyPlant(imagePath)?.apply {
                 print(this.toString())
-                challengeCardRepository?.createChallengeCard(this, imagePath, hint = "")
+                challengeCardRepositoryImpl?.createNewChallengeCard(this, imagePath)
             }
-
         }
     }
 }

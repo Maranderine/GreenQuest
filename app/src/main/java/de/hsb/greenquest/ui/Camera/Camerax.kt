@@ -114,7 +114,8 @@ fun CameraPreviewScreen(navController: NavController) {
                     }
 
                     Button(onClick = {
-                        //TODO API (imagePath)
+                        // TODO challenge cards check
+                        // TODO screen in between
                         cameraViewModel.identify(imagePath)
                         cameraViewModel.savePicture(plantFileName.value)
                         Log.d("plantFileName4", plantFileName.value)

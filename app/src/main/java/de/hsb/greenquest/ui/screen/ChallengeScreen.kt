@@ -40,8 +40,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import de.hsb.greenquest.ui.viewmodel.ChallengeViewModel
 import de.hsb.greenquest.R
-import de.hsb.greenquest.data.repository.toExternal
-import de.hsb.greenquest.domain.model.Challenge
+import de.hsb.greenquest.domain.model.DailyChallenge
+import de.hsb.greenquest.domain.model.challengeCard
 import de.hsb.greenquest.ui.navigation.Screen
 import de.hsb.greenquest.ui.theme.OnBackgroundDark
 import de.hsb.greenquest.ui.theme.SecondaryVariantDark
@@ -52,9 +52,20 @@ import kotlinx.coroutines.launch
 @Composable
 fun ChallengeScreen(navController: NavController, modifier: Modifier = Modifier, viewModel: ChallengeViewModel = hiltViewModel<ChallengeViewModel>()) {
     val coroutineScope = rememberCoroutineScope()
-    val challenges = viewModel.challengeList.collectAsState().value
 
-    val imageResource = when ((viewModel.progress.value.toFloat() / viewModel.requiredCount.value.toFloat())) {
+    val challenges = viewModel.challengeList.collectAsState().value
+    val done = challenges.count{ it.done }
+
+    val progress = viewModel.progress.value?.toFloat()
+    val requiredCount = viewModel.requiredCount.value?.toFloat()
+
+    val relativeProgress: Float = progress?.let { p ->
+        requiredCount?.let {
+            r -> p/r
+        }
+    }?: (-1).toFloat()
+
+    val imageResource = when (relativeProgress) {
         in 0.0..0.2 -> R.drawable.plant0
         in 0.2..0.4 -> R.drawable.plant1
         in 0.4..0.6 -> R.drawable.plant2
@@ -86,7 +97,7 @@ fun ChallengeScreen(navController: NavController, modifier: Modifier = Modifier,
                     Text(text = "daily")
                 }
                 OutlinedButton(colors = ButtonDefaults.buttonColors(contentColor = Color.White), border= BorderStroke(width = 2.dp, color = Color(0xff67c6c0), ), onClick = { navController.navigate(Screen.SearchCardsScreen.route) }) {
-                    Text(text = "daily")
+                    Text(text = "cards")
                 }
             }
             //Text(text = "streak: ${challenges.size}", color = OnBackgroundDark)
@@ -99,9 +110,9 @@ fun ChallengeScreen(navController: NavController, modifier: Modifier = Modifier,
                 contentDescription = "1"
             )
             Row {
-                Text(text = viewModel.challengeList.value.toExternal().count{ it.done }.toString(), color = OnBackgroundDark)
+                Text(text = done.toString(), color = OnBackgroundDark)
                 Text(text = "/", color = OnBackgroundDark)
-                Text(text = viewModel.challengeList.value.toExternal().size.toString(), color = Color.White)
+                Text(text = challenges.size.toString(), color = Color.White)
             }
         }
         //Spacer(modifier = Modifier.height(16.dp))
@@ -138,15 +149,13 @@ fun ChallengeScreen(navController: NavController, modifier: Modifier = Modifier,
                 horizontalAlignment = Alignment.CenterHorizontally,
                 userScrollEnabled = true
             ){
-                items(challenges?.size?: 0) { index ->
+                items(challenges.size ?: 0) { index ->
                     ChallengeCard(
                         modifier = Modifier.clickable { coroutineScope.launch {
-                            if (viewModel != null) {
-                                val challenge = challenges.get(index).toExternal()
-                                viewModel.updateChallenge(challenge.copy(progress = challenge.progress+1))
-                            }
+                            val challenge = challenges.get(index)
+                            viewModel.updateChallenge(challenge.copy(progress = challenge.progress+1))
                         } },
-                        challenge = challenges.toExternal()[index]
+                        challenge = challenges[index]
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                 }
@@ -159,12 +168,12 @@ fun ChallengeScreen(navController: NavController, modifier: Modifier = Modifier,
 }
 
 @Composable
-fun ChallengeCard(modifier: Modifier = Modifier.background(SecondaryVariantDark), challenge: Challenge) {
+fun ChallengeCard(modifier: Modifier = Modifier.background(SecondaryVariantDark), challenge: DailyChallenge) {
 
     Card(modifier = modifier.fillMaxWidth()){
         Row(modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween){
             Text(
-                text = challenge.Plant,
+                text = challenge.type,
                 fontSize = 20.sp,
                 textAlign = TextAlign.Left,
                 modifier = Modifier

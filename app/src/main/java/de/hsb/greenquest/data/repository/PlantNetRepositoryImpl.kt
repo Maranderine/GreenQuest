@@ -14,7 +14,6 @@ import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.google.gson.reflect.TypeToken
-import de.hsb.greenquest.domain.model.Challenge
 import de.hsb.greenquest.domain.model.Plant
 import kotlinx.coroutines.flow.Flow
 import org.json.JSONObject

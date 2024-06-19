@@ -1,9 +1,12 @@
 package de.hsb.greenquest.ui.viewmodel
 
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import de.hsb.greenquest.data.repository.ChallengeCardRepository
+import de.hsb.greenquest.data.repository.ChallengeCardRepositoryImpl
 import de.hsb.greenquest.domain.model.challengeCard
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,7 +16,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SearchCardsViewModel @Inject constructor(
-    private val challengeCardRepository: ChallengeCardRepository?
+    private val challengeCardRepositoryImpl: ChallengeCardRepositoryImpl?
 ): ViewModel()  {
 
     private var _challengeCards: MutableStateFlow<List<challengeCard>> = MutableStateFlow(listOf<challengeCard>())
@@ -28,25 +31,61 @@ class SearchCardsViewModel @Inject constructor(
 
     val cardsIdx: StateFlow<Int> = _cardsIdx.asStateFlow()
 
+    private val _openDialog = MutableStateFlow(false)
+
+    val openDialog: StateFlow<Boolean> = _openDialog.asStateFlow()
+
+    private val _DialogText = MutableStateFlow("no hint was given")
+
+    val DialogText: StateFlow<String> = _DialogText.asStateFlow()
+
+
+
     init{
         _loading.value = true
         viewModelScope.launch {
+            challengeCardRepositoryImpl?.getActiveChallengeCards()?.collect{
+                _challengeCards.value = it
+                _loading.value = false
+            }
 
-            print("IN LAUNCH")
-            challengeCardRepository?.getChallengeCardByIndex(0)?.let {
-                _challengeCards.value += listOf(it)
-           }
-            print("CHALLENGE CARDS: " + _challengeCards.value.toString())
-            _loading.value = false
+            openDialog.collect{
+                if(!it){
+                    _DialogText.value = "no hint was given"
+                }
+            }
         }
     }
 
-    fun changeIdx(direction: Int){
-        var dir = direction
-        if(_cardsIdx.value + dir < 0 || _cardsIdx.value + dir > challengeCards.value.size){
-            dir = 0
+    fun changeIdx(value: Int){
+        _cardsIdx.value = when(value){
+            in Int.MIN_VALUE..0 -> 0
+            in 0.._challengeCards.value.size -> value
+            else -> _challengeCards.value.size
         }
-        this._cardsIdx.value += dir
     }
 
+    fun toggleDialog(){
+        _DialogText.value = "no hint was given"
+        _openDialog.value = !_openDialog.value
+    }
+
+    fun setDialogText(text: String){
+        _DialogText.value = text
+    }
+
+    fun deleteCard(){
+        _loading.value = true
+        viewModelScope.launch {
+            challengeCardRepositoryImpl?.removeChallengeFromActive(_challengeCards.value[_cardsIdx.value])
+            _cardsIdx.value = if(cardsIdx.value > _challengeCards.value.size) (_cardsIdx.value -1) else _cardsIdx.value
+        }
+    }
+    fun loadChallengeCard(){
+        _loading.value = true
+        viewModelScope.launch {
+            challengeCardRepositoryImpl?.loadNewChallengeCard()
+        }
+    }
 }
+//TODO threshhold plant net
