@@ -1,5 +1,6 @@
 package de.hsb.greenquest.ui.viewmodel
 
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -11,8 +12,12 @@ import de.hsb.greenquest.domain.repository.ChallengeRepository
 import de.hsb.greenquest.domain.repository.PlantNetRepository
 import de.hsb.greenquest.domain.repository.PlantPictureRepository
 import de.hsb.greenquest.domain.usecase.EventManager
+import de.hsb.greenquest.domain.usecase.PlantIdentificationException
 import de.hsb.greenquest.domain.usecase.TakePictureUseCase
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -27,11 +32,22 @@ class CameraViewModel @Inject constructor(
 //    var imageName by mutableStateOf<String>("")
 
     //var plantFileName by mutableStateOf<String>("")
+    private val _error = MutableStateFlow<String?>(null)
+    val error = _error.asStateFlow()
 
     fun savePicture(plantFileName: String, imagePath: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            takePictureUseCase.takePicture(plantFileName, imagePath)
+            try {
+                takePictureUseCase.takePicture(plantFileName, imagePath)
+                _error.value = null
+            } catch (e: PlantIdentificationException) {
+                _error.value = e.message
+            }
         }
+    }
+
+    fun resetError() {
+        _error.value = null
     }
 
     fun identify(imagePath: String){

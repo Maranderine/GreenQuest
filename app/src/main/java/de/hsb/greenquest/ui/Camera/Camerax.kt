@@ -11,6 +11,7 @@ import android.os.Build
 import android.provider.MediaStore
 import android.util.Log
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
@@ -25,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -70,11 +72,21 @@ fun CameraPreviewScreen(navController: NavController) {
 
     var plantFileName = remember { mutableStateOf("") }
 
+    val error by cameraViewModel.error.collectAsState()
+
     LaunchedEffect(lensFacing) {
         val cameraProvider = context.getCameraProvider()
         cameraProvider.unbindAll()
         cameraProvider.bindToLifecycle(lifecycleOwner, cameraxSelector, preview, imageCapture)
         preview.setSurfaceProvider(previewView.surfaceProvider)
+    }
+
+    LaunchedEffect(error) {
+        error?.let {
+            isCameraOpen = true
+            Toast.makeText(context, it, Toast.LENGTH_LONG).show()
+            cameraViewModel.resetError()
+        }
     }
 
     Box(contentAlignment = Alignment.BottomCenter, modifier = Modifier.fillMaxSize()) {
@@ -118,14 +130,16 @@ fun CameraPreviewScreen(navController: NavController) {
                         //cameraViewModel.identify(imagePath)
                         cameraViewModel.savePicture(plantFileName.value, imagePath)
                         Log.d("plantFileName4", plantFileName.value)
-                        navController.navigate(Screen.PortfolioScreen.route) {
-                            popUpTo(navController.graph.findStartDestination().id) {
-                                saveState = true
-                            }
+                        //if (error != null) {
+                            navController.navigate(Screen.PortfolioScreen.route) {
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
 
-                            launchSingleTop = true
-                            restoreState = true
-                        }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        //}
                     }) {
                         Text(text = "Confirm")
                     }
@@ -133,6 +147,10 @@ fun CameraPreviewScreen(navController: NavController) {
             }
         }
     }
+}
+
+fun navigateTo() {
+
 }
 
 // Function to get the current location
