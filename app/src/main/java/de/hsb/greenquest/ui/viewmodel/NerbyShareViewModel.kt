@@ -18,8 +18,20 @@ import com.google.android.gms.nearby.connection.PayloadTransferUpdate
 import com.google.android.gms.nearby.connection.Strategy
 import javax.inject.Inject
 import android.app.Application
+import android.content.ContentValues
+import android.content.Context
+import android.os.Build
+import android.os.Environment
+import android.provider.MediaStore
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
 import de.hsb.greenquest.domain.model.Plant
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import java.io.InputStream
+import java.nio.charset.StandardCharsets
 
 
 @HiltViewModel
@@ -27,6 +39,8 @@ class NearbyViewModel @Inject constructor(
     application: Application
 ) : AndroidViewModel(application) {
 
+    private val TEXT_PAYLOAD_TYPE: Byte = 1
+    private val IMAGE_PAYLOAD_TYPE: Byte = 2
     private val connectionsClient: ConnectionsClient = Nearby.getConnectionsClient(application.applicationContext)
     private val strategy = Strategy.P2P_STAR
 
@@ -39,18 +53,27 @@ class NearbyViewModel @Inject constructor(
     private val _receivedDebugMessage = mutableStateOf<String>("") // State to hold received debug message
     val receivedDebugMessage: State<String> = _receivedDebugMessage
 
-    private var messageToSend: String? = null // Message to send
+    private var messageToSend: Plant? = null // Message to send
 
     private var currentEndpointId: String? = null // Store the currently connected endpoint ID
 
     private var advertisingStarted = false // Track if advertising is currently active
     private var discoveringStarted = false // Track if discovering is currently active
+    private val _receivedImageData = MutableStateFlow<ByteArray?>(null)
+    val receivedImageData: StateFlow<ByteArray?> = _receivedImageData
 
+    // Function to receive image data from payload
+    fun receiveImageData(imageData: ByteArray) {
+        viewModelScope.launch {
+            _receivedImageData.emit(imageData)
+        }
+    }
     private val connectionLifecycleCallback = object : ConnectionLifecycleCallback() {
         override fun onConnectionInitiated(endpointId: String, connectionInfo: ConnectionInfo) {
             connectionsClient.acceptConnection(endpointId, payloadCallback)
             messageToSend?.let {
-                sendDebugMessage(endpointId, it)
+                println(it.toString())
+                sendDebugMessage(getApplication<Application>(), endpointId, it)
             }
             currentEndpointId = endpointId
         }
@@ -73,9 +96,29 @@ class NearbyViewModel @Inject constructor(
 
     private val payloadCallback = object : PayloadCallback() {
         override fun onPayloadReceived(endpointId: String, payload: Payload) {
-            if (payload.type == Payload.Type.BYTES) {
-                val debugMessage = String(payload.asBytes()!!)
-                _receivedDebugMessage.value = debugMessage // Update received debug message state
+            when (payload.type) {
+                Payload.Type.BYTES -> {
+                    val data = payload.asBytes() ?: return
+                    val firstByte = data.firstOrNull() ?: return
+                    println(payload)
+                    when (firstByte) {
+                        TEXT_PAYLOAD_TYPE -> {
+                            val debugMessage = String(data.copyOfRange(1, data.size), Charsets.UTF_8)
+                            _receivedDebugMessage.value = debugMessage
+                            println("Received text payload: $debugMessage")
+                        }
+                        IMAGE_PAYLOAD_TYPE -> {
+                            val imageData = data.copyOfRange(1, data.size)
+                            processImagePayload(endpointId, imageData)
+                        }
+                        else -> {
+                            // Handle unknown payload type
+                        }
+                    }
+                }
+                Payload.Type.FILE -> {
+                    // Handle file payload if needed
+                }
             }
         }
 
@@ -84,8 +127,38 @@ class NearbyViewModel @Inject constructor(
         }
     }
 
-    fun startAdvertising(message: String) {
-        messageToSend = message
+    // Function to process image payload and save to MediaStore
+    private fun processImagePayload(endpointId: String, imageData: ByteArray) {
+        val context = getApplication<Application>()
+        val contentResolver = context.contentResolver
+
+        // Prepare image file metadata
+        val name = "GreenQuest.jpeg"
+        val contentValues = ContentValues().apply {
+            put(MediaStore.MediaColumns.DISPLAY_NAME, name)
+            put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
+                put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/GreenQuest")
+            }
+        }
+
+        // Define the content URI for inserting an image
+        val contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+
+        // Insert image into MediaStore
+        contentResolver.insert(contentUri, contentValues)?.also { uri ->
+            // Open an OutputStream to write the image data to the specified content URI
+            contentResolver.openOutputStream(uri)?.use { outputStream ->
+                outputStream.write(imageData)
+                println("Image saved to MediaStore: $uri")
+            }
+        } ?: run {
+            println("Failed to insert image into MediaStore")
+        }
+    }
+
+    fun startAdvertising(plant: Plant?) {
+        messageToSend = plant
         val advertisingOptions = AdvertisingOptions.Builder().setStrategy(strategy).build()
         connectionsClient.startAdvertising(
             "DeviceName", getApplication<Application>().packageName, connectionLifecycleCallback, advertisingOptions
@@ -145,8 +218,32 @@ class NearbyViewModel @Inject constructor(
         }
     }
 
-    private fun sendDebugMessage(endpointId: String, message: String) {
-        val payload = Payload.fromBytes(message.toByteArray())
-        connectionsClient.sendPayload(endpointId, payload)
+    private fun sendDebugMessage(context: Context, endpointId: String, plant: Plant) {
+        // Prepare textual data payload
+        val plantData = plant.toString() // Get the textual representation of the Plant object
+        val dataPayload = Payload.fromBytes(plantData.toByteArray(StandardCharsets.UTF_8))
+
+        // Prepare image payload
+        val imageUri = plant.imagePath // Assuming imagePath is of type Uri
+        val imagePayload = imageUri?.let { uri ->
+            try {
+                val inputStream: InputStream? = context.contentResolver.openInputStream(uri)
+                if (inputStream != null) {
+                    val imageBytes = inputStream.readBytes()
+                    Payload.fromBytes(imageBytes)
+                } else {
+                    null // Handle case where inputStream is null
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null // Handle exceptions, such as file not found or permission denied
+            }
+        }
+
+        // Send both payloads if imagePayload is not null
+        imagePayload?.let {
+            connectionsClient.sendPayload(endpointId, dataPayload)
+            connectionsClient.sendPayload(endpointId, imagePayload)
+        }
     }
 }
