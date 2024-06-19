@@ -39,12 +39,14 @@ class CameraViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 takePictureUseCase.takePicture(plantFileName, imagePath)
-                _error.value = null
+                _shouldNavigate.value = true
             } catch (e: PlantIdentificationException) {
                 _error.value = e.message
             }
         }
     }
+
+    val _shouldNavigate = MutableStateFlow(false)
 
     fun resetError() {
         _error.value = null
