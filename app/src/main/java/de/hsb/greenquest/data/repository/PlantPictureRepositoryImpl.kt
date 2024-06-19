@@ -45,6 +45,7 @@ class PlantPictureRepositoryImpl @Inject constructor(
         val plantEntity = plantPictureDao.getPlantPictureWithCommonNameByName(name = plant.name).firstOrNull()
 
         plantEntity?.let {
+            Log.d("DELTETE1", "")
             plantPictureMediaStoreLoader.deletePlantPicture(plant = plant)
             plantPictureDao.deletePlantPicture(plantPicture = plantEntity.plantPicture)
 

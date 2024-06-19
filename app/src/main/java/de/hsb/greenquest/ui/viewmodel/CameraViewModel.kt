@@ -1,6 +1,7 @@
 package de.hsb.greenquest.ui.viewmodel
 
 import android.content.Context
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -12,9 +13,11 @@ import de.hsb.greenquest.domain.repository.ChallengeRepository
 import de.hsb.greenquest.domain.repository.PlantNetRepository
 import de.hsb.greenquest.domain.repository.PlantPictureRepository
 import de.hsb.greenquest.domain.usecase.EventManager
+import de.hsb.greenquest.domain.usecase.PlantIdentificationException
 import de.hsb.greenquest.domain.usecase.TakePictureUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -30,30 +33,24 @@ class CameraViewModel @Inject constructor(
 //    var imageName by mutableStateOf<String>("")
 
     //var plantFileName by mutableStateOf<String>("")
-
-    private val _errorState = MutableStateFlow<String?>(null)
-    val errorState = _errorState.asStateFlow()
-
-    private val _navigateToNextScreen = MutableStateFlow(false)
-    val navigateToNextScreen = _navigateToNextScreen.asStateFlow()
+    private val _error = MutableStateFlow<String?>(null)
+    val error = _error.asStateFlow()
 
     fun savePicture(plantFileName: String, imagePath: String) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 takePictureUseCase.takePicture(plantFileName, imagePath)
-                _errorState.value = null
-                _navigateToNextScreen.value = true
-            } catch (e: TakePictureUseCase.PlantIdentificationException) {
-                _errorState.value = e.message
-                _navigateToNextScreen.value = false // Prevent navigation
+                _shouldNavigate.value = true
+            } catch (e: PlantIdentificationException) {
+                _error.value = e.message
             }
         }
     }
 
-    fun errorProcessed() {
-        // Reset UI (error) state flow
-        _errorState.value = null
-        _navigateToNextScreen.value = false
+    val _shouldNavigate = MutableStateFlow(false)
+
+    fun resetError() {
+        _error.value = null
     }
 
     fun identify(imagePath: String){

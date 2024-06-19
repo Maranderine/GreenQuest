@@ -45,14 +45,12 @@ import com.google.android.gms.location.LocationServices
 import de.hsb.greenquest.ui.navigation.Screen
 import de.hsb.greenquest.ui.viewmodel.CameraViewModel
 import java.io.File
-import java.io.IOException
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 
 @Composable
 fun CameraPreviewScreen(navController: NavController) {
-
     val cameraViewModel = hiltViewModel<CameraViewModel>()
 
     val lensFacing = CameraSelector.LENS_FACING_BACK
@@ -67,13 +65,13 @@ fun CameraPreviewScreen(navController: NavController) {
         ImageCapture.Builder().build()
     }
 
-    var isCameraOpen by remember { mutableStateOf(true) } // Track if the camera is open
-    var capturedImagePath by remember { mutableStateOf<String?>(null) } // Track the captured image path
+    var isCameraOpen by remember { mutableStateOf(true) }
+    var capturedImagePath by remember { mutableStateOf<String?>(null) }
     val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
 
-    val errorState by cameraViewModel.errorState.collectAsState()
-    val navigateToNextScreen by cameraViewModel.navigateToNextScreen.collectAsState()
     var plantFileName = remember { mutableStateOf("") }
+    val shouldNavigate by cameraViewModel._shouldNavigate.collectAsState() // Observe navigation state from ViewModel
+    val error by cameraViewModel.error.collectAsState()
 
     LaunchedEffect(lensFacing) {
         val cameraProvider = context.getCameraProvider()
@@ -82,10 +80,24 @@ fun CameraPreviewScreen(navController: NavController) {
         preview.setSurfaceProvider(previewView.surfaceProvider)
     }
 
-    LaunchedEffect(errorState) {
-        errorState?.let {
+    LaunchedEffect(error) {
+        error?.let {
+            isCameraOpen = true
             Toast.makeText(context, it, Toast.LENGTH_LONG).show()
-            cameraViewModel.errorProcessed()
+            cameraViewModel.resetError()
+        }
+    }
+
+    LaunchedEffect(shouldNavigate) {
+        if (shouldNavigate) {
+            navController.navigate(Screen.PortfolioScreen.route) {
+                popUpTo(navController.graph.findStartDestination().id) {
+                    saveState = true
+                }
+                launchSingleTop = true
+                restoreState = true
+            }
+            cameraViewModel._shouldNavigate.value = false // Reset navigation state
         }
     }
 
@@ -96,14 +108,13 @@ fun CameraPreviewScreen(navController: NavController) {
                 getCurrentLocation(context, fusedLocationClient) { location ->
                     captureImage(imageCapture, context, plantFileName, location) { imagePath ->
                         capturedImagePath = imagePath
-                        isCameraOpen = false // Close the camera after capturing the image
+                        isCameraOpen = false
                     }
                 }
             }) {
                 Text(text = "Capture Image")
             }
         } else {
-            // Display the captured image
             capturedImagePath?.let { imagePath ->
                 val imageView = ImageView(context)
                 displayImage(imageView, imagePath)
@@ -120,33 +131,14 @@ fun CameraPreviewScreen(navController: NavController) {
                     Button(onClick = {
                         deleteImage(imagePath)
                         isCameraOpen = true
+                        capturedImagePath = null
                         navController.navigate(Screen.CameraScreen.route)
                     }) {
                         Text(text = "Try Again")
                     }
 
                     Button(onClick = {
-                        //TODO API (imagePath)
-                        //cameraViewModel.identify(imagePath)
-
-                        cameraViewModel.savePicture(plantFileName.value, imagePath)
-
-                        Log.d("plantFileName4", plantFileName.value)
-
-                        if (navigateToNextScreen) {
-                            navController.navigate(Screen.PortfolioScreen.route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
-                                }
-
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-
-                        } else {
-                            isCameraOpen = true
-                            cameraViewModel.errorProcessed()
-                        }
+                        cameraViewModel.savePicture(plantFileName.value, imagePath) // Let ViewModel handle navigation
                     }) {
                         Text(text = "Confirm")
                     }
@@ -154,6 +146,10 @@ fun CameraPreviewScreen(navController: NavController) {
             }
         }
     }
+}
+
+fun navigateTo() {
+
 }
 
 // Function to get the current location
@@ -203,19 +199,28 @@ fun deleteImage(imagePath: String) {
 private fun displayImage(imageView: ImageView, filePath: String) {
     // Decode the bitmap from the file
     val bitmap = BitmapFactory.decodeFile(filePath)
-    Log.d("FILEPATH", filePath)
-    // Check if the image needs to be rotated
-    val rotationDegrees = 90
 
-    // Rotate the bitmap if needed
-    val rotatedBitmap = if (rotationDegrees != 0) {
-        rotateBitmap(bitmap, rotationDegrees.toFloat())
+    // Check if the bitmap was successfully decoded
+    if (bitmap != null) {
+        Log.d("FILEPATH", filePath)
+
+        // Check if the image needs to be rotated
+        val rotationDegrees = 90
+
+        // Rotate the bitmap if needed
+        val rotatedBitmap = if (rotationDegrees != 0) {
+            rotateBitmap(bitmap, rotationDegrees.toFloat())
+        } else {
+            bitmap
+        }
+
+        // Set the rotated bitmap to the ImageView
+        imageView.setImageBitmap(rotatedBitmap)
     } else {
-        bitmap // No rotation needed
+        // Handle the case where the bitmap could not be decoded
+        Log.e("displayImage", "Failed to decode bitmap from file: $filePath")
+        // You might want to display a placeholder image or show an error message here
     }
-
-    // Set the rotated bitmap to the ImageView
-    imageView.setImageBitmap(rotatedBitmap)
 }
 private fun rotateBitmap(bitmap: Bitmap, degrees: Float): Bitmap {
     val matrix = Matrix().apply { postRotate(degrees) }
