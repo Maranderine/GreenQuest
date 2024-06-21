@@ -1,4 +1,5 @@
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
@@ -34,11 +35,17 @@ fun NearbyConnectionScreen(viewModel: NearbyViewModel = hiltViewModel<NearbyView
     ) {
         Text("Status: $status")
         Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = { viewModel.startAdvertising(plant) }) {
+        Button(onClick = {
+            viewModel.startAdvertising(plant)
+            Log.d("NearbyConnectionScreen", "Start Advertising button clicked")
+        }) {
             Text("Start Advertising")
         }
         Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = { viewModel.startDiscovery() }) {
+        Button(onClick = {
+            viewModel.startDiscovery()
+            Log.d("NearbyConnectionScreen", "Start Discovery button clicked")
+        }) {
             Text("Start Discovery")
         }
         Spacer(modifier = Modifier.height(16.dp))
@@ -65,7 +72,10 @@ fun NearbyConnectionScreen(viewModel: NearbyViewModel = hiltViewModel<NearbyView
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = { viewModel.disconnect() }) {
+        Button(onClick = {
+            viewModel.disconnect()
+            Log.d("NearbyConnectionScreen", "Disconnect button clicked")
+        }) {
             Text("Disconnect")
         }
     }

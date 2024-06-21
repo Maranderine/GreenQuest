@@ -23,6 +23,7 @@ import android.content.Context
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
+import android.util.Log
 import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -71,9 +72,10 @@ class NearbyViewModel @Inject constructor(
 
     private val connectionLifecycleCallback = object : ConnectionLifecycleCallback() {
         override fun onConnectionInitiated(endpointId: String, connectionInfo: ConnectionInfo) {
+            Log.d("NearbyViewModel", "Connection initiated with endpoint: $endpointId, Info: $connectionInfo")
             connectionsClient.acceptConnection(endpointId, payloadCallback)
             messageToSend?.let {
-                println(it.toString())
+                Log.d("NearbyViewModel", "Sending message: $it")
                 sendDebugMessage(getApplication<Application>(), endpointId, it)
             }
             currentEndpointId = endpointId
@@ -82,14 +84,17 @@ class NearbyViewModel @Inject constructor(
         override fun onConnectionResult(endpointId: String, result: ConnectionResolution) {
             if (result.status.isSuccess) {
                 _status.value = "Connected to $endpointId"
+                Log.d("NearbyViewModel", "Connection successful with endpoint: $endpointId")
             } else {
                 _status.value = "Connection failed"
+                Log.d("NearbyViewModel", "Connection failed with endpoint: $endpointId, Status: ${result.status}")
             }
         }
 
         override fun onDisconnected(endpointId: String) {
             _status.value = "Disconnected from $endpointId"
             currentEndpointId = null
+            Log.d("NearbyViewModel", "Disconnected from endpoint: $endpointId")
             stopAdvertising()
             stopDiscovery()
         }
@@ -97,27 +102,28 @@ class NearbyViewModel @Inject constructor(
 
     private val payloadCallback = object : PayloadCallback() {
         override fun onPayloadReceived(endpointId: String, payload: Payload) {
+            Log.d("NearbyViewModel", "Payload received from endpoint: $endpointId, Payload: $payload")
             when (payload.type) {
                 Payload.Type.BYTES -> {
-                    println(payload)
                     val data = payload.asBytes() ?: return
                     val firstByte = data.firstOrNull() ?: return
                     when (firstByte) {
                         TEXT_PAYLOAD_TYPE -> {
                             val debugMessage = String(data.copyOfRange(1, data.size), Charsets.UTF_8)
                             _receivedDebugMessage.value = debugMessage
-                            println("Received text payload: $debugMessage")
+                            Log.d("NearbyViewModel", "Received text payload: $debugMessage")
                         }
                         IMAGE_PAYLOAD_TYPE -> {
                             val imageData = data.copyOfRange(1, data.size)
                             processImagePayload(endpointId, imageData)
                         }
                         else -> {
-                            // Handle unknown payload type
+                            Log.d("NearbyViewModel", "Received unknown payload type")
                         }
                     }
                 }
                 Payload.Type.FILE -> {
+                    Log.d("NearbyViewModel", "Received file payload")
                     // Handle file payload if needed
                 }
             }
@@ -127,16 +133,16 @@ class NearbyViewModel @Inject constructor(
             when (update.status) {
                 PayloadTransferUpdate.Status.IN_PROGRESS -> {
                     val progress = update.bytesTransferred * 100 / update.totalBytes
-                    println("Transfer in progress: $progress%")
+                    Log.d("NearbyViewModel", "Transfer in progress: $progress%")
                 }
                 PayloadTransferUpdate.Status.SUCCESS -> {
-                    println("Transfer completed successfully.")
+                    Log.d("NearbyViewModel", "Transfer completed successfully.")
                 }
                 PayloadTransferUpdate.Status.FAILURE -> {
-                    println("Transfer failed.")
+                    Log.d("NearbyViewModel", "Transfer failed.")
                 }
                 PayloadTransferUpdate.Status.CANCELED -> {
-                    println("Transfer canceled.")
+                    Log.d("NearbyViewModel", "Transfer canceled.")
                 }
             }
         }
@@ -146,7 +152,8 @@ class NearbyViewModel @Inject constructor(
     private fun processImagePayload(endpointId: String, imageData: ByteArray) {
         val context = getApplication<Application>()
         val contentResolver = context.contentResolver
-        println("Image DATA " + imageData)
+        Log.d("NearbyViewModel", "Processing image payload from endpoint: $endpointId, Image Data Length: ${imageData.size}")
+
         // Prepare image file metadata
         val name = "GreenQuest.jpeg"
         val contentValues = ContentValues().apply {
@@ -165,10 +172,10 @@ class NearbyViewModel @Inject constructor(
             // Open an OutputStream to write the image data to the specified content URI
             contentResolver.openOutputStream(uri)?.use { outputStream ->
                 outputStream.write(imageData)
-                println("Image saved to MediaStore: $uri")
+                Log.d("NearbyViewModel", "Image saved to MediaStore: $uri")
             }
         } ?: run {
-            println("Failed to insert image into MediaStore")
+            Log.d("NearbyViewModel", "Failed to insert image into MediaStore")
         }
     }
 
@@ -180,9 +187,11 @@ class NearbyViewModel @Inject constructor(
         ).addOnSuccessListener {
             _status.value = "Advertising..."
             advertisingStarted = true
+            Log.d("NearbyViewModel", "Advertising started successfully.")
         }.addOnFailureListener { e ->
             _status.value = "Advertising failed: ${e.message}"
             advertisingStarted = false
+            Log.d("NearbyViewModel", "Advertising failed: ${e.message}")
         }
     }
 
@@ -191,6 +200,7 @@ class NearbyViewModel @Inject constructor(
             connectionsClient.stopAdvertising()
             _status.value = "Stopped advertising"
             advertisingStarted = false
+            Log.d("NearbyViewModel", "Advertising stopped.")
         }
     }
 
@@ -199,20 +209,24 @@ class NearbyViewModel @Inject constructor(
         connectionsClient.startDiscovery(
             getApplication<Application>().packageName, object : EndpointDiscoveryCallback() {
                 override fun onEndpointFound(endpointId: String, info: DiscoveredEndpointInfo) {
+                    Log.d("NearbyViewModel", "Endpoint found: $endpointId, Info: $info")
                     connectionsClient.requestConnection("DeviceName", endpointId, connectionLifecycleCallback)
                     _endpoints.value = _endpoints.value + endpointId
                 }
 
                 override fun onEndpointLost(endpointId: String) {
+                    Log.d("NearbyViewModel", "Endpoint lost: $endpointId")
                     _endpoints.value = _endpoints.value - endpointId
                 }
             }, discoveryOptions
         ).addOnSuccessListener {
             _status.value = "Discovering..."
             discoveringStarted = true
+            Log.d("NearbyViewModel", "Discovery started successfully.")
         }.addOnFailureListener { e ->
             _status.value = "Discovery failed: ${e.message}"
             discoveringStarted = false
+            Log.d("NearbyViewModel", "Discovery failed: ${e.message}")
         }
     }
 
@@ -221,6 +235,7 @@ class NearbyViewModel @Inject constructor(
             connectionsClient.stopDiscovery()
             _status.value = "Stopped discovering"
             discoveringStarted = false
+            Log.d("NearbyViewModel", "Discovery stopped.")
         }
     }
 
@@ -228,6 +243,7 @@ class NearbyViewModel @Inject constructor(
         currentEndpointId?.let {
             connectionsClient.disconnectFromEndpoint(it)
             _status.value = "Disconnecting from $it..."
+            Log.d("NearbyViewModel", "Disconnecting from endpoint: $it")
             stopAdvertising()
             stopDiscovery()
         }
@@ -237,23 +253,24 @@ class NearbyViewModel @Inject constructor(
         // Prepare textual data payload
         val plantData = plant.toString() // Get the textual representation of the Plant object
         val dataPayload = Payload.fromBytes(plantData.toByteArray(StandardCharsets.UTF_8))
-        println(plantData + " PLANT AND BYTE" + dataPayload)
+        Log.d("NearbyViewModel", "Sending text payload: $plantData")
 
         // Prepare image payload
         val imageUri = plant.imagePath // Assuming imagePath is of type Uri
-        println("SEND URI " + imageUri)
+        Log.d("NearbyViewModel", "Preparing to send image payload, URI: $imageUri")
         val imagePayload = imageUri?.let { uri ->
             try {
                 val inputStream: InputStream? = context.contentResolver.openInputStream(uri)
                 if (inputStream != null) {
                     val imageBytes = inputStream.readBytes()
+                    Log.d("NearbyViewModel", "Read image bytes successfully, size: ${imageBytes.size}")
                     Payload.fromBytes(imageBytes)
                 } else {
-                    println("Input stream is Null")
+                    Log.d("NearbyViewModel", "Input stream is null")
                     null
                 }
             } catch (e: Exception) {
-                println("Handle exceptions, such as file not found or permission denied")
+                Log.d("NearbyViewModel", "Exception occurred while reading image bytes: ${e.message}")
                 e.printStackTrace()
                 null
             }
@@ -263,6 +280,7 @@ class NearbyViewModel @Inject constructor(
         imagePayload?.let {
             connectionsClient.sendPayload(endpointId, dataPayload)
             connectionsClient.sendPayload(endpointId, imagePayload)
+            Log.d("NearbyViewModel", "Sent both text and image payloads to endpoint: $endpointId")
         }
     }
 }

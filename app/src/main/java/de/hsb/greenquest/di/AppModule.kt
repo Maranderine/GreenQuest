@@ -2,6 +2,8 @@ package de.hsb.greenquest.di
 
 import android.content.Context
 import androidx.room.Room
+import com.google.android.gms.nearby.Nearby
+import com.google.android.gms.nearby.connection.ConnectionsClient
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -91,5 +93,10 @@ object AppModule {
     @Singleton
     fun provideChallengeRepository(dao: ChallengeDao): ChallengeRepository {
         return ChallengeRepositoryImpl(dao)
+    }
+    @Provides
+    @Singleton
+    fun provideConnectionsClient(@ApplicationContext context: Context): ConnectionsClient {
+        return Nearby.getConnectionsClient(context)
     }
 }
