@@ -36,12 +36,12 @@ import java.nio.charset.StandardCharsets
 
 @HiltViewModel
 class NearbyViewModel @Inject constructor(
-    application: Application
+    application: Application,
+    private val connectionsClient: ConnectionsClient // Injecting ConnectionsClient
 ) : AndroidViewModel(application) {
 
     private val TEXT_PAYLOAD_TYPE: Byte = 1
     private val IMAGE_PAYLOAD_TYPE: Byte = 2
-    private val connectionsClient: ConnectionsClient = Nearby.getConnectionsClient(application.applicationContext)
     private val strategy = Strategy.P2P_STAR
 
     private val _status = mutableStateOf("Idle")
@@ -50,7 +50,7 @@ class NearbyViewModel @Inject constructor(
     private val _endpoints = mutableStateOf(listOf<String>())
     val endpoints: State<List<String>> = _endpoints
 
-    private val _receivedDebugMessage = mutableStateOf<String>("") // State to hold received debug message
+    private val _receivedDebugMessage = mutableStateOf("") // State to hold received debug message
     val receivedDebugMessage: State<String> = _receivedDebugMessage
 
     private var messageToSend: Plant? = null // Message to send
@@ -68,6 +68,7 @@ class NearbyViewModel @Inject constructor(
             _receivedImageData.emit(imageData)
         }
     }
+
     private val connectionLifecycleCallback = object : ConnectionLifecycleCallback() {
         override fun onConnectionInitiated(endpointId: String, connectionInfo: ConnectionInfo) {
             connectionsClient.acceptConnection(endpointId, payloadCallback)
@@ -145,7 +146,7 @@ class NearbyViewModel @Inject constructor(
     private fun processImagePayload(endpointId: String, imageData: ByteArray) {
         val context = getApplication<Application>()
         val contentResolver = context.contentResolver
-        println("Image DATA "+imageData)
+        println("Image DATA " + imageData)
         // Prepare image file metadata
         val name = "GreenQuest.jpeg"
         val contentValues = ContentValues().apply {
@@ -236,11 +237,11 @@ class NearbyViewModel @Inject constructor(
         // Prepare textual data payload
         val plantData = plant.toString() // Get the textual representation of the Plant object
         val dataPayload = Payload.fromBytes(plantData.toByteArray(StandardCharsets.UTF_8))
-        println(plantData+ " PLANT AND BYTE" + dataPayload)
+        println(plantData + " PLANT AND BYTE" + dataPayload)
 
         // Prepare image payload
         val imageUri = plant.imagePath // Assuming imagePath is of type Uri
-        println("SEND URI "+imageUri)
+        println("SEND URI " + imageUri)
         val imagePayload = imageUri?.let { uri ->
             try {
                 val inputStream: InputStream? = context.contentResolver.openInputStream(uri)
