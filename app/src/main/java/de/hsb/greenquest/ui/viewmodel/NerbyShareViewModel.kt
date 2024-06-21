@@ -122,8 +122,22 @@ class NearbyViewModel @Inject constructor(
             }
         }
 
-        override fun onPayloadTransferUpdate(p0: String, p1: PayloadTransferUpdate) {
-            TODO("Not yet implemented")
+        override fun onPayloadTransferUpdate(endpointId: String, update: PayloadTransferUpdate) {
+            when (update.status) {
+                PayloadTransferUpdate.Status.IN_PROGRESS -> {
+                    val progress = update.bytesTransferred * 100 / update.totalBytes
+                    println("Transfer in progress: $progress%")
+                }
+                PayloadTransferUpdate.Status.SUCCESS -> {
+                    println("Transfer completed successfully.")
+                }
+                PayloadTransferUpdate.Status.FAILURE -> {
+                    println("Transfer failed.")
+                }
+                PayloadTransferUpdate.Status.CANCELED -> {
+                    println("Transfer canceled.")
+                }
+            }
         }
     }
 
