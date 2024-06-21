@@ -98,9 +98,9 @@ class NearbyViewModel @Inject constructor(
         override fun onPayloadReceived(endpointId: String, payload: Payload) {
             when (payload.type) {
                 Payload.Type.BYTES -> {
+                    println(payload)
                     val data = payload.asBytes() ?: return
                     val firstByte = data.firstOrNull() ?: return
-                    println(payload)
                     when (firstByte) {
                         TEXT_PAYLOAD_TYPE -> {
                             val debugMessage = String(data.copyOfRange(1, data.size), Charsets.UTF_8)
@@ -122,8 +122,8 @@ class NearbyViewModel @Inject constructor(
             }
         }
 
-        override fun onPayloadTransferUpdate(endpointId: String, update: PayloadTransferUpdate) {
-            // Handle transfer updates if needed
+        override fun onPayloadTransferUpdate(p0: String, p1: PayloadTransferUpdate) {
+            TODO("Not yet implemented")
         }
     }
 
@@ -131,7 +131,7 @@ class NearbyViewModel @Inject constructor(
     private fun processImagePayload(endpointId: String, imageData: ByteArray) {
         val context = getApplication<Application>()
         val contentResolver = context.contentResolver
-
+        println("Image DATA "+imageData)
         // Prepare image file metadata
         val name = "GreenQuest.jpeg"
         val contentValues = ContentValues().apply {
@@ -222,9 +222,11 @@ class NearbyViewModel @Inject constructor(
         // Prepare textual data payload
         val plantData = plant.toString() // Get the textual representation of the Plant object
         val dataPayload = Payload.fromBytes(plantData.toByteArray(StandardCharsets.UTF_8))
+        println(plantData+ " PLANT AND BYTE" + dataPayload)
 
         // Prepare image payload
         val imageUri = plant.imagePath // Assuming imagePath is of type Uri
+        println("SEND URI "+imageUri)
         val imagePayload = imageUri?.let { uri ->
             try {
                 val inputStream: InputStream? = context.contentResolver.openInputStream(uri)
@@ -232,11 +234,13 @@ class NearbyViewModel @Inject constructor(
                     val imageBytes = inputStream.readBytes()
                     Payload.fromBytes(imageBytes)
                 } else {
-                    null // Handle case where inputStream is null
+                    println("Input stream is Null")
+                    null
                 }
             } catch (e: Exception) {
+                println("Handle exceptions, such as file not found or permission denied")
                 e.printStackTrace()
-                null // Handle exceptions, such as file not found or permission denied
+                null
             }
         }
 
