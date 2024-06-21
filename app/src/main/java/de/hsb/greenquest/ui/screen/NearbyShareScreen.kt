@@ -5,6 +5,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -13,20 +14,44 @@ import de.hsb.greenquest.ui.viewmodel.NearbyViewModel
 
 @Composable
 fun NearbyConnectionScreen(viewModel: NearbyViewModel = hiltViewModel<NearbyViewModel>()) {
-    val status by viewModel.status
-    val endpoints by viewModel.endpoints
-    val receivedDebugMessage by viewModel.receivedDebugMessage // Collect received debug message
-    val receivedImageData by viewModel.receivedImageData.collectAsState() // Collect received image data
+    // State variables to hold UI state
+    var status by remember { mutableStateOf("Idle") }
+    var endpoints by remember { mutableStateOf(emptyList<String>()) }
+    var receivedDebugMessage by remember { mutableStateOf<String?>(null) }
+    var receivedImageData by remember { mutableStateOf<ByteArray?>(null) }
+    var debugMessageToSend by remember { mutableStateOf("") }
 
-    var debugMessageToSend by remember { mutableStateOf("") } // State to hold debug message to send
-    val plant = Plant(
-        name = "Sample Plant",
-        commonNames = listOf("Common Name 1", "Common Name 2"),
-        species = "Sample Species",
-        description = "This is a sample plant description.",
-        imagePath = Uri.parse("content://path/to/image"), // Example URI, adjust as needed
-        favorite = false // Set to true if debugging favorite functionality
-    )
+    // Plant object to advertise
+    val plant = remember {
+        Plant(
+            name = "Sample Plant",
+            commonNames = listOf("Common Name 1", "Common Name 2"),
+            species = "Sample Species",
+            description = "This is a sample plant description.",
+            imagePath = Uri.parse("content://path/to/image"), // Example URI, adjust as needed
+            favorite = false // Set to true if debugging favorite functionality
+        )
+    }
+
+    // Effect to update UI when status changes
+    LaunchedEffect(viewModel.status) {
+        status = viewModel.status.value
+    }
+
+    // Effect to update UI when endpoints change
+    LaunchedEffect(viewModel.endpoints) {
+        endpoints = viewModel.endpoints.value
+    }
+
+    // Effect to update UI when debug message is received
+    LaunchedEffect(viewModel.receivedDebugMessage) {
+        receivedDebugMessage = viewModel.receivedDebugMessage.value
+    }
+
+    // Effect to update UI when image data is received
+    LaunchedEffect(viewModel.receivedImageData) {
+        receivedImageData = viewModel.receivedImageData.value
+    }
 
     Column(
         modifier = Modifier
@@ -55,10 +80,9 @@ fun NearbyConnectionScreen(viewModel: NearbyViewModel = hiltViewModel<NearbyView
         }
         Spacer(modifier = Modifier.height(16.dp))
         Text("Received Debug Message:")
-        Text(receivedDebugMessage ?: "No debug message received") // Display received debug message or a default message
+        Text(receivedDebugMessage ?: "No debug message received")
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Display received image payload if available
         receivedImageData?.let { imageData ->
             Text("Received Image Payload: ${imageData.size} bytes")
             // Replace with actual image display logic if needed

@@ -20,17 +20,24 @@ import javax.inject.Inject
 import android.app.Application
 import android.content.ContentValues
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
 import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.crashlytics.buildtools.reloc.org.apache.commons.io.output.ByteArrayOutputStream
 import de.hsb.greenquest.domain.model.Plant
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.io.IOException
 import java.io.InputStream
 import java.nio.charset.StandardCharsets
 
@@ -51,8 +58,9 @@ class NearbyViewModel @Inject constructor(
     private val _endpoints = mutableStateOf(listOf<String>())
     val endpoints: State<List<String>> = _endpoints
 
-    private val _receivedDebugMessage = mutableStateOf("") // State to hold received debug message
-    val receivedDebugMessage: State<String> = _receivedDebugMessage
+    private val _receivedDebugMessage = MutableLiveData<String>()
+    val receivedDebugMessage: LiveData<String>
+        get() = _receivedDebugMessage
 
     private var messageToSend: Plant? = null // Message to send
 
@@ -103,6 +111,7 @@ class NearbyViewModel @Inject constructor(
     private val payloadCallback = object : PayloadCallback() {
         override fun onPayloadReceived(endpointId: String, payload: Payload) {
             Log.d("NearbyViewModel", "Payload received from endpoint: $endpointId, Payload: $payload")
+
             when (payload.type) {
                 Payload.Type.BYTES -> {
                     val data = payload.asBytes() ?: return
@@ -110,7 +119,7 @@ class NearbyViewModel @Inject constructor(
                     when (firstByte) {
                         TEXT_PAYLOAD_TYPE -> {
                             val debugMessage = String(data.copyOfRange(1, data.size), Charsets.UTF_8)
-                            _receivedDebugMessage.value = debugMessage
+                            _receivedDebugMessage.postValue(debugMessage)
                             Log.d("NearbyViewModel", "Received text payload: $debugMessage")
                         }
                         IMAGE_PAYLOAD_TYPE -> {
@@ -119,12 +128,20 @@ class NearbyViewModel @Inject constructor(
                         }
                         else -> {
                             Log.d("NearbyViewModel", "Received unknown payload type")
+                            // Handle unknown payload type here
+                            handleUnknownPayload(endpointId, data)
                         }
                     }
                 }
                 Payload.Type.FILE -> {
-                    Log.d("NearbyViewModel", "Received file payload")
+                    Log.d("NearbyViewModel", "Received file payload. This scenario is not handled in the current implementation.")
                     // Handle file payload if needed
+                    handleFilePayload(endpointId, payload)
+                }
+                else -> {
+                    Log.d("NearbyViewModel", "Received unknown payload type: ${payload.type}")
+                    // Handle unknown payload type here
+                    handleUnknownPayload(endpointId, null)
                 }
             }
         }
@@ -146,13 +163,29 @@ class NearbyViewModel @Inject constructor(
                 }
             }
         }
+
+        private fun handleUnknownPayload(endpointId: String, data: ByteArray?) {
+            // Implement your logic to handle unknown payload types
+            // For example:
+            // Log the data if available
+            if (data != null) {
+                Log.d("NearbyViewModel", "Unknown payload data: ${String(data, Charsets.UTF_8)}")
+            } else {
+                Log.d("NearbyViewModel", "Unknown payload received with no data.")
+            }
+        }
+
+        private fun handleFilePayload(endpointId: String, payload: Payload) {
+            // Implement your logic to handle file payloads
+            // For example:
+            // Log the file payload details
+            Log.d("NearbyViewModel", "File payload received: ${payload.id}")
+        }
     }
 
-    // Function to process image payload and save to MediaStore
     private fun processImagePayload(endpointId: String, imageData: ByteArray) {
         val context = getApplication<Application>()
         val contentResolver = context.contentResolver
-        Log.d("NearbyViewModel", "Processing image payload from endpoint: $endpointId, Image Data Length: ${imageData.size}")
 
         // Prepare image file metadata
         val name = "GreenQuest.jpeg"
@@ -168,14 +201,27 @@ class NearbyViewModel @Inject constructor(
         val contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
 
         // Insert image into MediaStore
-        contentResolver.insert(contentUri, contentValues)?.also { uri ->
-            // Open an OutputStream to write the image data to the specified content URI
-            contentResolver.openOutputStream(uri)?.use { outputStream ->
-                outputStream.write(imageData)
-                Log.d("NearbyViewModel", "Image saved to MediaStore: $uri")
+        var imageUri: Uri? = null
+        try {
+            imageUri = contentResolver.insert(contentUri, contentValues)
+        } catch (e: IOException) {
+            Log.e("NearbyViewModel", "Error inserting image into MediaStore", e)
+        }
+
+        // If insertion was successful, open OutputStream and write image data
+        imageUri?.let { uri ->
+            try {
+                contentResolver.openOutputStream(uri)?.use { outputStream ->
+                    // Resize image to optimize payload size
+                    val resizedImage = resizeImageForPayload(imageData)
+                    outputStream.write(resizedImage)
+                    Log.d("NearbyViewModel", "Image saved to MediaStore: $uri, Size: ${resizedImage.size} bytes")
+                }
+            } catch (e: IOException) {
+                Log.e("NearbyViewModel", "Error writing image data to MediaStore", e)
             }
         } ?: run {
-            Log.d("NearbyViewModel", "Failed to insert image into MediaStore")
+            Log.e("NearbyViewModel", "Failed to insert image into MediaStore")
         }
     }
 
@@ -255,6 +301,9 @@ class NearbyViewModel @Inject constructor(
         val dataPayload = Payload.fromBytes(plantData.toByteArray(StandardCharsets.UTF_8))
         Log.d("NearbyViewModel", "Sending text payload: $plantData")
 
+        // Log the type of payload being sent
+        Log.d("NearbyViewModel", "Sending payload of type: Text")
+
         // Prepare image payload
         val imageUri = plant.imagePath // Assuming imagePath is of type Uri
         Log.d("NearbyViewModel", "Preparing to send image payload, URI: $imageUri")
@@ -264,23 +313,70 @@ class NearbyViewModel @Inject constructor(
                 if (inputStream != null) {
                     val imageBytes = inputStream.readBytes()
                     Log.d("NearbyViewModel", "Read image bytes successfully, size: ${imageBytes.size}")
-                    Payload.fromBytes(imageBytes)
+                    val resizedImage = resizeImageForPayload(imageBytes)
+                    Payload.fromBytes(resizedImage)
                 } else {
                     Log.d("NearbyViewModel", "Input stream is null")
                     null
                 }
             } catch (e: Exception) {
-                Log.d("NearbyViewModel", "Exception occurred while reading image bytes: ${e.message}")
-                e.printStackTrace()
+                Log.e("NearbyViewModel", "Exception occurred while reading image bytes: ${e.message}", e)
                 null
             }
         }
 
         // Send both payloads if imagePayload is not null
-        imagePayload?.let {
+        if (imagePayload != null) {
             connectionsClient.sendPayload(endpointId, dataPayload)
             connectionsClient.sendPayload(endpointId, imagePayload)
             Log.d("NearbyViewModel", "Sent both text and image payloads to endpoint: $endpointId")
+            // Log the type of payload being sent
+            Log.d("NearbyViewModel", "Sending payload of type: Image")
+        } else {
+            Log.d("NearbyViewModel", "Failed to prepare image payload for sending")
         }
+    }
+
+    private fun resizeImageForPayload(imageData: ByteArray): ByteArray {
+        val options = BitmapFactory.Options()
+        options.inJustDecodeBounds = true
+        BitmapFactory.decodeByteArray(imageData, 0, imageData.size, options)
+
+        // Calculate the inSampleSize to reduce image dimensions
+        options.inSampleSize = calculateInSampleSize(options, 1024, 1024)
+
+        // Decode bitmap with inSampleSize set
+        options.inJustDecodeBounds = false
+        val resizedBitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.size, options)
+
+        // Convert resized bitmap to byte array
+        val outputStream = ByteArrayOutputStream()
+        resizedBitmap?.compress(Bitmap.CompressFormat.JPEG, 80, outputStream)
+        val resizedImage = outputStream.toByteArray()
+
+        // Recycle the bitmap to free up memory
+        resizedBitmap?.recycle()
+
+        return resizedImage
+    }
+
+    private fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int, reqHeight: Int): Int {
+        // Raw height and width of image
+        val height = options.outHeight
+        val width = options.outWidth
+        var inSampleSize = 1
+
+        if (height > reqHeight || width > reqWidth) {
+            val halfHeight: Int = height / 2
+            val halfWidth: Int = width / 2
+
+            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
+            // height and width larger than the requested height and width.
+            while ((halfHeight / inSampleSize) >= reqHeight && (halfWidth / inSampleSize) >= reqWidth) {
+                inSampleSize *= 2
+            }
+        }
+
+        return inSampleSize
     }
 }
