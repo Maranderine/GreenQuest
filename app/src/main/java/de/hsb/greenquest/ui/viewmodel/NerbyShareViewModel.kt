@@ -18,9 +18,12 @@ import com.google.android.gms.nearby.connection.PayloadTransferUpdate
 import com.google.android.gms.nearby.connection.Strategy
 import javax.inject.Inject
 import android.app.Application
+import android.content.Context
+import android.graphics.BitmapFactory
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import de.hsb.greenquest.domain.model.Plant
+import java.io.InputStream
 
 
 @HiltViewModel
@@ -82,6 +85,15 @@ class NearbyViewModel @Inject constructor(
                 val debugMessage = String(payload.asBytes()!!)
                 _receivedDebugMessage.value = debugMessage
                 Log.d(TAG, "onPayloadReceived: Received payload from $endpointId: $debugMessage")
+            }
+            if (false){
+                Log.d("NearbyViewModel", "Received unsupported payload type: ${payload.type}")
+                val bitmap = BitmapFactory.decodeByteArray(
+                    payload.asBytes(),
+                    0,
+                    payload.asBytes()?.size ?: 0
+                )
+                Log.d("NearbyViewModel", "bitmap: ${bitmap}")
             }
         }
 
@@ -165,5 +177,31 @@ class NearbyViewModel @Inject constructor(
         val payload = Payload.fromBytes(plant.toString().toByteArray())
         connectionsClient.sendPayload(endpointId, payload)
         Log.d(TAG, "sendDebugMessage: Sent payload to $endpointId: $plant")
+        //sendImage(endpointId, plant)
+    }
+    private fun sendImage(endpointId: String, plant: Plant?){
+        val imageUri = plant?.imagePath // Assuming imagePath is of type Uri
+        val imagePayload = imageUri?.let { uri ->
+            try {
+                val inputStream: InputStream? = getApplication<Application>().contentResolver.openInputStream(uri)
+                if (inputStream != null) {
+                    val imageBytes = inputStream.readBytes()
+                    Log.d("NearbyViewModel", "Read image bytes successfully, size: ${imageBytes.size}")
+                    Payload.fromBytes(imageBytes)
+                } else {
+                    Log.d("NearbyViewModel", "Input stream is null")
+                    null
+                }
+            } catch (e: Exception) {
+                Log.e("NearbyViewModel", "Exception occurred while reading image bytes: ${e.message}", e)
+                null
+            }
+        }
+        if (imagePayload != null){
+            connectionsClient.sendPayload(endpointId, imagePayload)
+        }else{
+            Log.d("NearbyViewModel", "Payload is null dumbass")
+
+        }
     }
 }
