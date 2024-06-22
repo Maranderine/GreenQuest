@@ -3,6 +3,7 @@ package de.hsb.greenquest.data.local.mediastore
 import android.content.ContentUris
 import android.content.Context
 import android.database.ContentObserver
+import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.provider.MediaStore
@@ -54,6 +55,13 @@ class PlantPictureMediaStoreLoader @Inject constructor(
         plant.imagePath?.let { uri ->
             contentResolver.delete(uri, null, null) // Delete the picture from the MediaStore
         }
+    }
+
+    fun deletePicture(uri: Uri) {
+        val contentResolver = applicationContext.contentResolver
+
+        contentResolver.delete(uri, null, null) // Delete the picture from the MediaStore
+
     }
 
     private fun loadPicturesFromMediaStore() {

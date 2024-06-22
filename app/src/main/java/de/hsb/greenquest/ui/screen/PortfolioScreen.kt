@@ -150,7 +150,7 @@ fun PortfolioElement(plant: Plant, navController: NavController, portfolioViewMo
                 }
         )
         Text(
-            text = plant.name,
+            text = plant.commonNames.first(),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.width(100.dp)

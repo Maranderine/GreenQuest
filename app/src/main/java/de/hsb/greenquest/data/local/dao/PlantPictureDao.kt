@@ -33,8 +33,8 @@ interface PlantPictureDao {
     @Query("SELECT * FROM $PLANT_PICTURE_TABLE")
     fun getAllPlantPicturesWithCommonNames(): Flow<List<PlantPictureWithCommonNames>>
 
-    @Query("UPDATE $PLANT_PICTURE_TABLE SET description = :description, favorite = :favorite WHERE name = :name")
-    suspend fun updatePlantPicture(name: String, description: String, favorite: Boolean)
+    @Query("UPDATE $PLANT_PICTURE_TABLE SET description = :description, favorite = :favorite, species = :species WHERE name = :name")
+    suspend fun updatePlantPicture(name: String, description: String, favorite: Boolean, species: String)
 
     @Update
     suspend fun updateCommonName(commonName: CommonNameEntity)

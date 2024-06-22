@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Matrix
 import android.os.Environment
 import java.io.File
 import java.io.FileOutputStream
@@ -29,6 +30,10 @@ class ChallengeCardImageInternalStorageLoader @Inject constructor(
         var fos: FileOutputStream? = null
         try {
             fos = FileOutputStream(mypath)
+
+            val matrix = Matrix().apply { postRotate(90F) }
+            bitmapImage = Bitmap.createBitmap(bitmapImage, 0, 0, bitmapImage.width, bitmapImage.height, matrix, true)
+
             // Use the compress method on the BitMap object to write image to the OutputStream
             bitmapImage.compress(Bitmap.CompressFormat.JPEG, 100, fos)
         } catch (e: Exception) {

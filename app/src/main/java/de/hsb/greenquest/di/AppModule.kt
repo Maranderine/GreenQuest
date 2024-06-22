@@ -146,8 +146,8 @@ object AppModule {
     }
     @Provides
     @Singleton
-    fun provideTakePictureUseCase(plantPictureRepository: PlantPictureRepository): TakePictureUseCase {
-        return TakePictureUseCase(plantPictureRepository)
+    fun provideTakePictureUseCase(plantPictureRepository: PlantPictureRepository, plantNetRepository: PlantNetRepository): TakePictureUseCase {
+        return TakePictureUseCase(plantPictureRepository, plantNetRepository)
     }
 
     @Provides
