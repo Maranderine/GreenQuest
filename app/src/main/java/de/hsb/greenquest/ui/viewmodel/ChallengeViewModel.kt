@@ -4,7 +4,10 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.scopes.ViewModelScoped
+import de.hsb.greenquest.data.repository.AchievementsRepositoryImpl
 import de.hsb.greenquest.domain.model.DailyChallenge
+import de.hsb.greenquest.domain.repository.AchievementsRepository
 import de.hsb.greenquest.domain.repository.DailyChallengeRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,6 +19,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ChallengeViewModel@Inject constructor(
     private val dailyChallengeRepository: DailyChallengeRepository,
+    private val achievementsRepository: AchievementsRepository
 ) : ViewModel() {
 //class ChallengeViewModel() : ViewModel() {
 
@@ -35,16 +39,18 @@ class ChallengeViewModel@Inject constructor(
 
     val requiredCount: StateFlow<Int?> = _requiredCount.asStateFlow()
 
+    private var _points: MutableStateFlow<Int> = MutableStateFlow(0)
+
+    val points: StateFlow<Int?> = _points.asStateFlow()
+
     init {
-        print("IN INIT FUNCTION OF CHALLENG")
         viewModelScope.launch {
            dailyChallengeRepository.getActiveChallengesStream().transform {
-                if (it.all { value -> val t = today; Log.d("help;-;", "todays date is xxx $t"); value.date === today }) {
-                    //emit(challenges.toLocal())
-                    emit(emptyList<DailyChallenge>())
+                if (it.all { value -> val t = today; value.date == today }) {
 
-                } else {
                     emit(it)
+                } else {
+                    emit(emptyList<DailyChallenge>())
 
                     //emit(emptyList<LocalChallengeEntity>())
                 }
@@ -57,6 +63,11 @@ class ChallengeViewModel@Inject constructor(
                     _progress.value = 1
                     _requiredCount.value = -1
                 }
+            }
+        }
+        viewModelScope.launch {
+            achievementsRepository.points.collect{
+                _points.value = it
             }
         }
     }

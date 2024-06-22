@@ -66,6 +66,8 @@ fun SearchCardsScreen(navController: NavController) {
     val currIdx = portfolioViewModel.cardsIdx.collectAsState().value
     val loading: Boolean = portfolioViewModel.loading.collectAsState().value
 
+    val points = portfolioViewModel.points.collectAsState().value
+
 
     Column(
         modifier = Modifier
@@ -90,7 +92,7 @@ fun SearchCardsScreen(navController: NavController) {
 
         }
         val sizeC = cards.size
-        Text(text = "streak: 3", color= Color.White)
+        Text(text = "points: $points", color= Color.White)
         Spacer(modifier = Modifier.size(40.dp))
         Box(modifier = Modifier.height(300.dp)){
             if(loading){

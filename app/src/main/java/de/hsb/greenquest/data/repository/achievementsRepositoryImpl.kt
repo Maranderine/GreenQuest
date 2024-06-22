@@ -3,6 +3,7 @@ package de.hsb.greenquest.data.repository
 import android.content.Context
 import de.hsb.greenquest.domain.model.DailyChallenge
 import de.hsb.greenquest.domain.model.Plant
+import de.hsb.greenquest.domain.repository.AchievementsRepository
 import de.hsb.greenquest.domain.repository.ChallengeCardRepository
 import de.hsb.greenquest.domain.repository.DailyChallengeRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,23 +19,24 @@ class AchievementsRepositoryImpl @Inject constructor(
     private val dailyChallengeRepository: DailyChallengeRepository,
     private val challengeCardRepository: ChallengeCardRepository,
     private val applicationContext: Context
-) {
+): AchievementsRepository{
+
     private val activeDailyChallenges: List<DailyChallenge> = emptyList()
     private val _points: MutableStateFlow<Int> = MutableStateFlow(0)
-    private val points: StateFlow<Int> = _points.asStateFlow()
+    override val points: StateFlow<Int> = _points.asStateFlow()
     private val USER_POINTS_FILE_PATH = "userPoints.txt"
 
     init {
         _points.value = getUserPoints()?: 0
     }
-    fun writeTo(filename: String, fileContents: String){
+    override fun writeTo(filename: String, fileContents: String){
 
         applicationContext.openFileOutput(filename, Context.MODE_PRIVATE).use {
             it.write(fileContents.toByteArray())
         }
     }
 
-    fun readFrom(filename: String): String{
+    override fun readFrom(filename: String): String{
         val fis: FileInputStream = applicationContext.openFileInput(filename)
         val isr = InputStreamReader(fis)
         val bufferedReader = BufferedReader(isr)
@@ -47,7 +49,7 @@ class AchievementsRepositoryImpl @Inject constructor(
 
     }
 
-    fun getUserPoints(): Int?{
+    override fun getUserPoints(): Int?{
         return try {
             Integer.parseInt(readFrom(USER_POINTS_FILE_PATH))
         }catch (e: Exception){
@@ -55,11 +57,11 @@ class AchievementsRepositoryImpl @Inject constructor(
         }
     }
 
-    fun saveUserPoints(){
+    override fun saveUserPoints(){
         writeTo(USER_POINTS_FILE_PATH, _points.value.toString())
     }
 
-    suspend fun checkChallenges(plant: Plant){
+    override suspend fun checkChallenges(plant: Plant){
         val activeDailyChallenges = dailyChallengeRepository.getActiveChallenges()
         val activeChallengeCards = challengeCardRepository.getAvailableChallengeCardsData()
 

@@ -25,6 +25,7 @@ import de.hsb.greenquest.data.repository.AchievementsRepositoryImpl
 import de.hsb.greenquest.data.repository.ChallengeCardRepositoryImpl
 import de.hsb.greenquest.data.repository.PlantPictureRepositoryImpl
 import de.hsb.greenquest.data.repository.PlantNetRepositoryImpl
+import de.hsb.greenquest.domain.repository.AchievementsRepository
 import de.hsb.greenquest.domain.repository.ChallengeCardRepository
 import de.hsb.greenquest.domain.repository.DailyChallengeRepository
 import de.hsb.greenquest.domain.repository.PlantNetRepository
@@ -82,11 +83,11 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideAchivemetsRepository(
+    fun provideAchievementsRepository(
         @ApplicationContext context: Context,
         dailyChallengeRepository: DailyChallengeRepository,
         challengeCardRepository: ChallengeCardRepository
-    ): AchievementsRepositoryImpl{
+    ): AchievementsRepository {
         return AchievementsRepositoryImpl(dailyChallengeRepository, challengeCardRepository, context)
     }
 

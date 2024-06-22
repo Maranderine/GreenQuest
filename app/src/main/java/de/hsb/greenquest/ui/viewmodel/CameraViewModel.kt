@@ -5,28 +5,32 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import de.hsb.greenquest.data.repository.AchievementsRepositoryImpl
 import de.hsb.greenquest.data.repository.ChallengeCardRepositoryImpl
+import de.hsb.greenquest.domain.model.Plant
 import de.hsb.greenquest.domain.repository.DailyChallengeRepository
 import de.hsb.greenquest.domain.repository.PlantNetRepository
 import de.hsb.greenquest.domain.usecase.TakePictureUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import androidx.compose.runtime.*
+import de.hsb.greenquest.domain.repository.AchievementsRepository
+import de.hsb.greenquest.domain.repository.ChallengeCardRepository
+import kotlinx.coroutines.flow.StateFlow
+
+//import androidx.compose.runtime.livedata.observeAsState
 
 
 @HiltViewModel
 class CameraViewModel @Inject constructor(
-    private val achievementsRepositoryImpl: AchievementsRepositoryImpl,
+    private val achievementsRepository: AchievementsRepository,
     private val takePictureUseCase: TakePictureUseCase,
     private val plantNetRepository: PlantNetRepository,
     private val dailyChallengeRepository: DailyChallengeRepository,
-    private val challengeCardRepositoryImpl: ChallengeCardRepositoryImpl
+    private val challengeCardRepository: ChallengeCardRepository
     //private val firebaseApp: FirebaseApp?,
 ): ViewModel() {
 
-//    var imagePath by mutableStateOf<String>("")
-//    var imageName by mutableStateOf<String>("")
-
-    //var plantFileName by mutableStateOf<String>("")
+    var plant by mutableStateOf<Plant?>(null)
 
     fun savePicture(plantFileName: String) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -36,8 +40,9 @@ class CameraViewModel @Inject constructor(
 
     fun identify(imagePath: String){
         viewModelScope.launch(Dispatchers.IO) {
-           ( plantNetRepository.identifyPlant(imagePath))?.let { plant ->
-               achievementsRepositoryImpl.checkChallenges(plant)
+           ( plantNetRepository.identifyPlant(imagePath))?.let { p ->
+               achievementsRepository.checkChallenges(p)
+               plant = p
            }
         }
     }
@@ -71,7 +76,7 @@ class CameraViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             plantNetRepository.identifyPlant(imagePath)?.apply {
                 print(this.toString())
-                challengeCardRepositoryImpl?.createNewChallengeCard(this, imagePath)
+                challengeCardRepository?.createNewChallengeCard(this, imagePath)
             }
         }
     }

@@ -6,8 +6,10 @@ import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import de.hsb.greenquest.data.repository.AchievementsRepositoryImpl
 import de.hsb.greenquest.data.repository.ChallengeCardRepositoryImpl
 import de.hsb.greenquest.domain.model.challengeCard
+import de.hsb.greenquest.domain.repository.AchievementsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,7 +18,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SearchCardsViewModel @Inject constructor(
-    private val challengeCardRepositoryImpl: ChallengeCardRepositoryImpl?
+    private val challengeCardRepositoryImpl: ChallengeCardRepositoryImpl?,
+    private val achievementsRepository: AchievementsRepository
 ): ViewModel()  {
 
     private var _challengeCards: MutableStateFlow<List<challengeCard>> = MutableStateFlow(listOf<challengeCard>())
@@ -39,6 +42,10 @@ class SearchCardsViewModel @Inject constructor(
 
     val DialogText: StateFlow<String> = _DialogText.asStateFlow()
 
+    private val _points: MutableStateFlow<Int> = MutableStateFlow(0)
+
+    val points: StateFlow<Int> = _points.asStateFlow()
+
 
 
     init{
@@ -53,6 +60,11 @@ class SearchCardsViewModel @Inject constructor(
                 if(!it){
                     _DialogText.value = "no hint was given"
                 }
+            }
+        }
+        viewModelScope.launch {
+            achievementsRepository.points.collect{
+                _points.value = it
             }
         }
     }

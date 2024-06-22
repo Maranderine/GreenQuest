@@ -17,9 +17,13 @@ import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,8 +35,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -40,6 +46,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import de.hsb.greenquest.domain.model.Plant
 import de.hsb.greenquest.ui.navigation.Screen
 import de.hsb.greenquest.ui.viewmodel.CameraViewModel
 import java.io.File
@@ -65,12 +72,15 @@ fun CameraPreviewScreen(navController: NavController) {
     }
 
     var isCameraOpen by remember { mutableStateOf(true) } // Track if the camera is open
+    var isConfirmImage by remember { mutableStateOf(false) }
     var capturedImagePath by remember { mutableStateOf<String?>(null) } // Track the captured image path
     val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
 
     var plantFileName = remember { mutableStateOf("") }
 
+
     LaunchedEffect(lensFacing) {
+        cameraViewModel.plant = null
         val cameraProvider = context.getCameraProvider()
         cameraProvider.unbindAll()
         cameraProvider.bindToLifecycle(lifecycleOwner, cameraxSelector, preview, imageCapture)
@@ -85,12 +95,13 @@ fun CameraPreviewScreen(navController: NavController) {
                     captureImage(imageCapture, context, plantFileName, location) { imagePath ->
                         capturedImagePath = imagePath
                         isCameraOpen = false // Close the camera after capturing the image
+                        isConfirmImage = true
                     }
                 }
             }) {
                 Text(text = "Capture Image")
             }
-        } else {
+        } else if(isConfirmImage) {
             // Display the captured image
             capturedImagePath?.let { imagePath ->
                 val imageView = ImageView(context)
@@ -114,26 +125,64 @@ fun CameraPreviewScreen(navController: NavController) {
                     }
 
                     Button(onClick = {
-                        // TODO challenge cards check
-                        // TODO screen in between
-                        cameraViewModel.identify(imagePath)
-                        cameraViewModel.savePicture(plantFileName.value)
-                        Log.d("plantFileName4", plantFileName.value)
-                        navController.navigate(Screen.PortfolioScreen.route) {
-                            popUpTo(navController.graph.findStartDestination().id) {
-                                saveState = true
-                            }
-
-                            launchSingleTop = true
-                            restoreState = true
-                        }
+                        isConfirmImage = false
                     }) {
                         Text(text = "Confirm")
                     }
-                    Button(onClick = {
-                        cameraViewModel.createChallengeCard(imagePath, "")
-                    }) {
-                        Text(text = "create Challenge Card")
+                }
+            }
+        }else{
+            //achievements
+            capturedImagePath?.let { imagePath ->
+                val plant: Plant? = cameraViewModel.plant
+                if(plant == null){
+                    cameraViewModel.identify(imagePath)
+                }
+
+
+                val imageView = ImageView(context)
+                displayImage(imageView, imagePath)
+                AndroidView(
+                    { imageView },
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .fillMaxWidth()
+                )
+
+                var resString: String = "give us a moment to identify the plant..."
+                plant?.name?.let { resString = "congrats, you've found a $it !!" }
+                Column(
+                    modifier = Modifier.align(Alignment.BottomCenter)
+                ) {
+                    Text(text = resString, textAlign = TextAlign.Center, modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentSize(Alignment.Center))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Button(onClick = {
+                            isCameraOpen = true
+                            cameraViewModel.plant = null
+                            cameraViewModel.savePicture(plantFileName.value)
+                            navController.navigate(Screen.PortfolioScreen.route) {
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }) {
+                            Text(text = "add to Portfolio")
+                        }
+                        Button(onClick = {
+                            cameraViewModel.createChallengeCard(imagePath, "")
+                            isCameraOpen = true
+                            cameraViewModel.plant = null
+                        }) {
+                            Text(text = "create Challenge Card")
+                        }
                     }
                 }
             }

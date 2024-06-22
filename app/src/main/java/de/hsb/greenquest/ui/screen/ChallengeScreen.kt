@@ -65,6 +65,8 @@ fun ChallengeScreen(navController: NavController, modifier: Modifier = Modifier,
         }
     }?: (-1).toFloat()
 
+    val points = viewModel.points.collectAsState().value
+
     val imageResource = when (relativeProgress) {
         in 0.0..0.2 -> R.drawable.plant0
         in 0.2..0.4 -> R.drawable.plant1
@@ -100,7 +102,7 @@ fun ChallengeScreen(navController: NavController, modifier: Modifier = Modifier,
                     Text(text = "cards")
                 }
             }
-            //Text(text = "streak: ${challenges.size}", color = OnBackgroundDark)
+            Text(text = "points: $points", color= Color.White)
             Image(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
@@ -134,7 +136,7 @@ fun ChallengeScreen(navController: NavController, modifier: Modifier = Modifier,
                 ){
                     Image(
                         modifier = Modifier.clickable { coroutineScope.launch {
-                            viewModel.refreshChallenges()
+                           viewModel.refreshChallenges()
                         } },
                         painter = painterResource(R.drawable.baseline_refresh_24),
                         contentDescription = "1"
@@ -152,8 +154,8 @@ fun ChallengeScreen(navController: NavController, modifier: Modifier = Modifier,
                 items(challenges.size ?: 0) { index ->
                     ChallengeCard(
                         modifier = Modifier.clickable { coroutineScope.launch {
-                            val challenge = challenges.get(index)
-                            viewModel.updateChallenge(challenge.copy(progress = challenge.progress+1))
+                            //val challenge = challenges.get(index)
+                            //viewModel.updateChallenge(challenge.copy(progress = challenge.progress+1))
                         } },
                         challenge = challenges[index]
                     )
