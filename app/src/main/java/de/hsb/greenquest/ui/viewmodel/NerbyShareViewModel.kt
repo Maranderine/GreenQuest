@@ -232,37 +232,41 @@ class NearbyViewModel @Inject constructor(
         }
     }
 
-    // Function to send pending message if available after connection is established
     private fun sendPendingMessage(endpointId: String) {
-        messageToSend?.let { plant ->
-            val imageUri = plant.imagePath // Assuming imagePath is of type Uri
-            Log.d("NearbyViewModel", "Preparing to send image payload, URI: $imageUri")
-            val imagePayload = imageUri?.let { uri ->
-                try {
-                    val context = getApplication<Application>()
-                    val pfd = context.contentResolver.openFileDescriptor(uri, "r")
-                    pfd?.let {
-                        Payload.fromFile(it)
-                    }
-                } catch (e: Exception) {
-                    Log.d("NearbyViewModel", "Exception occurred while reading image file: ${e.message}")
-                    e.printStackTrace()
+        val plant = messageToSend ?: return // Ensure messageToSend is not null
+        val context = getApplication<Application>()
+
+        // Prepare textual data payload
+        val plantData = plant.toString() // Get the textual representation of the Plant object
+        val dataPayload = Payload.fromBytes(plantData.toByteArray(StandardCharsets.UTF_8))
+        Log.d("NearbyViewModel", "Sending text payload: $plantData")
+
+        // Prepare image payload
+        val imageUri = plant.imagePath // Assuming imagePath is of type Uri
+        Log.d("NearbyViewModel", "Preparing to send image payload, URI: $imageUri")
+        val imagePayload = imageUri?.let { uri ->
+            try {
+                val inputStream: InputStream? = context.contentResolver.openInputStream(uri)
+                if (inputStream != null) {
+                    val imageBytes = inputStream.readBytes()
+                    Log.d("NearbyViewModel", "Read image bytes successfully, size: ${imageBytes.size}")
+                    Payload.fromBytes(imageBytes)
+                } else {
+                    Log.d("NearbyViewModel", "Input stream is null")
                     null
                 }
+            } catch (e: Exception) {
+                Log.d("NearbyViewModel", "Exception occurred while reading image bytes: ${e.message}")
+                e.printStackTrace()
+                null
             }
+        }
 
-            if (imagePayload != null) {
-                connectionsClient.sendPayload(endpointId, imagePayload)
-                    .addOnSuccessListener {
-                        Log.d("NearbyViewModel", "Sent image payload to endpoint: $endpointId")
-                    }
-                    .addOnFailureListener { e ->
-                        Log.d("NearbyViewModel", "Failed to send image payload: ${e.message}")
-                        // Handle failure (retry, notify user, etc.)
-                    }
-            } else {
-                Log.d("NearbyViewModel", "Failed to create image payload")
-            }
+        // Send both payloads if imagePayload is not null
+        imagePayload?.let {
+            connectionsClient.sendPayload(endpointId, dataPayload)
+            connectionsClient.sendPayload(endpointId, imagePayload)
+            Log.d("NearbyViewModel", "Sent both text and image payloads to endpoint: $endpointId")
         }
     }
 }

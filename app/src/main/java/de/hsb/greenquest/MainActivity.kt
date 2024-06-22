@@ -79,7 +79,7 @@ class MainActivity : ComponentActivity() {
         val changeWifiStatePermission = Manifest.permission.CHANGE_WIFI_STATE
         //val writeStoragePermission = Manifest.permission.WRITE_EXTERNAL_STORAGE
         //val readStoragePermission = Manifest.permission.READ_EXTERNAL_STORAGE
-        val manageExternalStorage = Manifest.permission.MANAGE_EXTERNAL_STORAGE
+        //val manageExternalStorage = Manifest.permission.MANAGE_EXTERNAL_STORAGE
 
 
         val hasCameraPermission = ContextCompat.checkSelfPermission(this, cameraPermission) == PackageManager.PERMISSION_GRANTED
@@ -97,7 +97,7 @@ class MainActivity : ComponentActivity() {
         val hasChangeWifiStatePermission = ContextCompat.checkSelfPermission(this, changeWifiStatePermission) == PackageManager.PERMISSION_GRANTED
         //val hasWriteStoragePermission = ContextCompat.checkSelfPermission(this, writeStoragePermission) == PackageManager.PERMISSION_GRANTED
         //val hasReadStoragePermission = ContextCompat.checkSelfPermission(this, readStoragePermission) == PackageManager.PERMISSION_GRANTED
-        val hasManageExternalStorage = ContextCompat.checkSelfPermission(this, manageExternalStorage) == PackageManager.PERMISSION_GRANTED
+        //val hasManageExternalStorage = ContextCompat.checkSelfPermission(this, manageExternalStorage) == PackageManager.PERMISSION_GRANTED
 
         if (hasCameraPermission && hasStoragePermission && (hasFineLocationPermission || hasCoarseLocationPermission)
             && hasBluetoothPermission && hasBluetoothAdminPermission && (bluetoothScanPermission == null || hasBluetoothScanPermission!!)
@@ -105,7 +105,7 @@ class MainActivity : ComponentActivity() {
             && (bluetoothConnectPermission == null || hasBluetoothConnectPermission!!)
             && (nearbyWifiDevicesPermission == null || hasNearbyWifiDevicesPermission!!)
             && hasInternetPermission && hasAccessWifiStatePermission && hasChangeWifiStatePermission
-            /*&& hasWriteStoragePermission*/ /*&& hasReadStoragePermission*/ && hasManageExternalStorage) {
+            /*&& hasWriteStoragePermission*/ /*&& hasReadStoragePermission*/ /*&& hasManageExternalStorage*/) {
             // All required permissions are granted
             setCameraPreview()
         } else {
@@ -156,9 +156,9 @@ class MainActivity : ComponentActivity() {
             //if (!hasReadStoragePermission) {
             //    permissionsToRequest.add(readStoragePermission)
             //}
-            if (!hasManageExternalStorage) {
-                permissionsToRequest.add(manageExternalStorage)
-            }
+            //if (!hasManageExternalStorage) {
+            //    permissionsToRequest.add(manageExternalStorage)
+            //}
 
             requestPermissionsLauncher.launch(permissionsToRequest.toTypedArray())
         }
