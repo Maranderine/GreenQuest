@@ -18,6 +18,7 @@ import com.google.android.gms.nearby.connection.PayloadTransferUpdate
 import com.google.android.gms.nearby.connection.Strategy
 import javax.inject.Inject
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import de.hsb.greenquest.domain.model.Plant
 
@@ -26,6 +27,8 @@ import de.hsb.greenquest.domain.model.Plant
 class NearbyViewModel @Inject constructor(
     application: Application
 ) : AndroidViewModel(application) {
+
+    private val TAG = "NearbyViewModel"
 
     private val connectionsClient: ConnectionsClient = Nearby.getConnectionsClient(application.applicationContext)
     private val strategy = Strategy.P2P_STAR
@@ -36,15 +39,13 @@ class NearbyViewModel @Inject constructor(
     private val _endpoints = mutableStateOf(listOf<String>())
     val endpoints: State<List<String>> = _endpoints
 
-    private val _receivedDebugMessage = mutableStateOf<String>("") // State to hold received debug message
+    private val _receivedDebugMessage = mutableStateOf<String>("")
     val receivedDebugMessage: State<String> = _receivedDebugMessage
 
-    private var messageToSend: Plant? = null // Message to send
-
-    private var currentEndpointId: String? = null // Store the currently connected endpoint ID
-
-    private var advertisingStarted = false // Track if advertising is currently active
-    private var discoveringStarted = false // Track if discovering is currently active
+    private var messageToSend: Plant? = null
+    private var currentEndpointId: String? = null
+    private var advertisingStarted = false
+    private var discoveringStarted = false
 
     private val connectionLifecycleCallback = object : ConnectionLifecycleCallback() {
         override fun onConnectionInitiated(endpointId: String, connectionInfo: ConnectionInfo) {
@@ -53,13 +54,16 @@ class NearbyViewModel @Inject constructor(
                 sendDebugMessage(endpointId, it)
             }
             currentEndpointId = endpointId
+            Log.d(TAG, "onConnectionInitiated: Initiating connection with endpoint $endpointId")
         }
 
         override fun onConnectionResult(endpointId: String, result: ConnectionResolution) {
             if (result.status.isSuccess) {
                 _status.value = "Connected to $endpointId"
+                Log.d(TAG, "onConnectionResult: Connected to endpoint $endpointId")
             } else {
                 _status.value = "Connection failed"
+                Log.d(TAG, "onConnectionResult: Connection to endpoint $endpointId failed")
             }
         }
 
@@ -68,6 +72,7 @@ class NearbyViewModel @Inject constructor(
             currentEndpointId = null
             stopAdvertising()
             stopDiscovery()
+            Log.d(TAG, "onDisconnected: Disconnected from endpoint $endpointId")
         }
     }
 
@@ -75,13 +80,14 @@ class NearbyViewModel @Inject constructor(
         override fun onPayloadReceived(endpointId: String, payload: Payload) {
             if (payload.type == Payload.Type.BYTES) {
                 val debugMessage = String(payload.asBytes()!!)
-                _receivedDebugMessage.value = debugMessage // Update received debug message state
-                println(_receivedDebugMessage)
+                _receivedDebugMessage.value = debugMessage
+                Log.d(TAG, "onPayloadReceived: Received payload from $endpointId: $debugMessage")
             }
         }
 
         override fun onPayloadTransferUpdate(endpointId: String, update: PayloadTransferUpdate) {
             // Handle transfer updates if needed
+            Log.d(TAG, "onPayloadTransferUpdate: Transfer update for endpoint $endpointId: $update")
         }
     }
 
@@ -93,9 +99,11 @@ class NearbyViewModel @Inject constructor(
         ).addOnSuccessListener {
             _status.value = "Advertising..."
             advertisingStarted = true
+            Log.d(TAG, "startAdvertising: Started advertising")
         }.addOnFailureListener { e ->
             _status.value = "Advertising failed: ${e.message}"
             advertisingStarted = false
+            Log.e(TAG, "startAdvertising: Advertising failed", e)
         }
     }
 
@@ -104,6 +112,7 @@ class NearbyViewModel @Inject constructor(
             connectionsClient.stopAdvertising()
             _status.value = "Stopped advertising"
             advertisingStarted = false
+            Log.d(TAG, "stopAdvertising: Stopped advertising")
         }
     }
 
@@ -114,18 +123,22 @@ class NearbyViewModel @Inject constructor(
                 override fun onEndpointFound(endpointId: String, info: DiscoveredEndpointInfo) {
                     connectionsClient.requestConnection("DeviceName", endpointId, connectionLifecycleCallback)
                     _endpoints.value = _endpoints.value + endpointId
+                    Log.d(TAG, "onEndpointFound: Found endpoint $endpointId")
                 }
 
                 override fun onEndpointLost(endpointId: String) {
                     _endpoints.value = _endpoints.value - endpointId
+                    Log.d(TAG, "onEndpointLost: Lost endpoint $endpointId")
                 }
             }, discoveryOptions
         ).addOnSuccessListener {
             _status.value = "Discovering..."
             discoveringStarted = true
+            Log.d(TAG, "startDiscovery: Started discovering")
         }.addOnFailureListener { e ->
             _status.value = "Discovery failed: ${e.message}"
             discoveringStarted = false
+            Log.e(TAG, "startDiscovery: Discovery failed", e)
         }
     }
 
@@ -134,6 +147,7 @@ class NearbyViewModel @Inject constructor(
             connectionsClient.stopDiscovery()
             _status.value = "Stopped discovering"
             discoveringStarted = false
+            Log.d(TAG, "stopDiscovery: Stopped discovering")
         }
     }
 
@@ -143,11 +157,13 @@ class NearbyViewModel @Inject constructor(
             _status.value = "Disconnecting from $it..."
             stopAdvertising()
             stopDiscovery()
+            Log.d(TAG, "disconnect: Disconnecting from endpoint $it")
         }
     }
 
     private fun sendDebugMessage(endpointId: String, plant: Plant?) {
         val payload = Payload.fromBytes(plant.toString().toByteArray())
         connectionsClient.sendPayload(endpointId, payload)
+        Log.d(TAG, "sendDebugMessage: Sent payload to $endpointId: $plant")
     }
 }
