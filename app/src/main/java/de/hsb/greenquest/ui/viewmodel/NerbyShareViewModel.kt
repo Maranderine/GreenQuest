@@ -81,12 +81,12 @@ class NearbyViewModel @Inject constructor(
 
     private val payloadCallback = object : PayloadCallback() {
         override fun onPayloadReceived(endpointId: String, payload: Payload) {
-            if (payload.type == Payload.Type.BYTES) {
+            if (payload.type == Payload.Type.BYTES && false) {
                 val debugMessage = String(payload.asBytes()!!)
                 _receivedDebugMessage.value = debugMessage
                 Log.d(TAG, "onPayloadReceived: Received payload from $endpointId: $debugMessage")
             }
-            if (false){
+            if (true){
                 Log.d("NearbyViewModel", "Received unsupported payload type: ${payload.type}")
                 val bitmap = BitmapFactory.decodeByteArray(
                     payload.asBytes(),
@@ -174,10 +174,10 @@ class NearbyViewModel @Inject constructor(
     }
 
     private fun sendDebugMessage(endpointId: String, plant: Plant?) {
-        val payload = Payload.fromBytes(plant.toString().toByteArray())
-        connectionsClient.sendPayload(endpointId, payload)
-        Log.d(TAG, "sendDebugMessage: Sent payload to $endpointId: $plant")
-        //sendImage(endpointId, plant)
+        //val payload = Payload.fromBytes(plant.toString().toByteArray())
+        //connectionsClient.sendPayload(endpointId, payload)
+        //Log.d(TAG, "sendDebugMessage: Sent payload to $endpointId: $plant")
+        sendImage(endpointId, plant)
     }
     private fun sendImage(endpointId: String, plant: Plant?){
         val imageUri = plant?.imagePath // Assuming imagePath is of type Uri
@@ -198,6 +198,7 @@ class NearbyViewModel @Inject constructor(
             }
         }
         if (imagePayload != null){
+            Log.d("NearbyViewModel", "SEND INFO")
             connectionsClient.sendPayload(endpointId, imagePayload)
         }else{
             Log.d("NearbyViewModel", "Payload is null dumbass")
