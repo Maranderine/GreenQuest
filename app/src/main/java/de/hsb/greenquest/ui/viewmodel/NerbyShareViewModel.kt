@@ -53,9 +53,6 @@ class NearbyViewModel @Inject constructor(
     private val connectionLifecycleCallback = object : ConnectionLifecycleCallback() {
         override fun onConnectionInitiated(endpointId: String, connectionInfo: ConnectionInfo) {
             connectionsClient.acceptConnection(endpointId, payloadCallback)
-            messageToSend?.let {
-                sendDebugMessage(endpointId, it)
-            }
             currentEndpointId = endpointId
             Log.d(TAG, "onConnectionInitiated: Initiating connection with endpoint $endpointId")
         }
@@ -64,6 +61,9 @@ class NearbyViewModel @Inject constructor(
             if (result.status.isSuccess) {
                 _status.value = "Connected to $endpointId"
                 Log.d(TAG, "onConnectionResult: Connected to endpoint $endpointId")
+                messageToSend?.let {
+                    sendDebugMessage(endpointId, it)
+                }
             } else {
                 _status.value = "Connection failed"
                 Log.d(TAG, "onConnectionResult: Connection to endpoint $endpointId failed")
