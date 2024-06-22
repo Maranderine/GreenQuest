@@ -278,7 +278,7 @@ class NearbyViewModel @Inject constructor(
 
         // Send both payloads if imagePayload is not null
         imagePayload?.let {
-            connectionsClient.sendPayload(endpointId, dataPayload)
+            //connectionsClient.sendPayload(endpointId, dataPayload)
             connectionsClient.sendPayload(endpointId, imagePayload)
             Log.d("NearbyViewModel", "Sent both text and image payloads to endpoint: $endpointId")
         }
