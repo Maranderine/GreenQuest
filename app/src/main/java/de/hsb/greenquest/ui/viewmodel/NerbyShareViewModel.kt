@@ -20,6 +20,7 @@ import javax.inject.Inject
 import android.app.Application
 import android.content.ContentValues
 import android.content.Context
+import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
@@ -111,6 +112,13 @@ class NearbyViewModel @Inject constructor(
                 }
                 else -> {
                     Log.d("NearbyViewModel", "Received unsupported payload type: ${payload.type}")
+                      val bitmap = BitmapFactory.decodeByteArray(
+                        payload.asBytes(),
+                        0,
+                        payload.asBytes()?.size ?: 0
+                    )
+                    Log.d("NearbyViewModel", "bitmap: ${bitmap}")
+
                 }
             }
         }
@@ -264,7 +272,7 @@ class NearbyViewModel @Inject constructor(
 
         // Send both payloads if imagePayload is not null
         imagePayload?.let {
-            connectionsClient.sendPayload(endpointId, dataPayload)
+            //connectionsClient.sendPayload(endpointId, dataPayload)
             connectionsClient.sendPayload(endpointId, imagePayload)
             Log.d("NearbyViewModel", "Sent both text and image payloads to endpoint: $endpointId")
         }
