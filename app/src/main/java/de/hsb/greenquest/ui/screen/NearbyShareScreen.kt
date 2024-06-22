@@ -51,12 +51,6 @@ fun NearbyConnectionScreen(viewModel: NearbyViewModel = hiltViewModel<NearbyView
         Text("Received Debug Message:")
         Text(receivedDebugMessage) // Display received debug message
         Spacer(modifier = Modifier.height(16.dp))
-        TextField(
-            value = debugMessageToSend,
-            onValueChange = { debugMessageToSend = it },
-            label = { Text("Debug Message") },
-            modifier = Modifier.fillMaxWidth()
-        )
         Spacer(modifier = Modifier.height(16.dp))
         Button(onClick = { viewModel.disconnect() }) {
             Text("Disconnect")

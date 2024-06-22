@@ -39,7 +39,7 @@ class NearbyViewModel @Inject constructor(
     private val _receivedDebugMessage = mutableStateOf<String>("") // State to hold received debug message
     val receivedDebugMessage: State<String> = _receivedDebugMessage
 
-    private var messageToSend: String? = null // Message to send
+    private var messageToSend: Plant? = null // Message to send
 
     private var currentEndpointId: String? = null // Store the currently connected endpoint ID
 
@@ -86,7 +86,7 @@ class NearbyViewModel @Inject constructor(
     }
 
     fun startAdvertising(plant: Plant?) {
-        messageToSend = plant.toString()
+        messageToSend = plant
         val advertisingOptions = AdvertisingOptions.Builder().setStrategy(strategy).build()
         connectionsClient.startAdvertising(
             "DeviceName", getApplication<Application>().packageName, connectionLifecycleCallback, advertisingOptions
@@ -146,8 +146,8 @@ class NearbyViewModel @Inject constructor(
         }
     }
 
-    private fun sendDebugMessage(endpointId: String, message: String) {
-        val payload = Payload.fromBytes(message.toByteArray())
+    private fun sendDebugMessage(endpointId: String, plant: Plant?) {
+        val payload = Payload.fromBytes(plant.toString().toByteArray())
         connectionsClient.sendPayload(endpointId, payload)
     }
 }
