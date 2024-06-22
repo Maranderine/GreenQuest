@@ -95,7 +95,7 @@ fun PlantDetailScreen(navController: NavController, name: String?) {
             IconButton(
                 onClick = {
                     //TODO enable Nearby Share
-                          nearbyViewModel.startAdvertising("test")
+                          nearbyViewModel.startAdvertising(plant)
                 },
             ) {
                 Icon(

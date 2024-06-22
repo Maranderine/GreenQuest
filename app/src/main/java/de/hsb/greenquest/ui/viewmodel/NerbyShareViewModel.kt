@@ -76,6 +76,7 @@ class NearbyViewModel @Inject constructor(
             if (payload.type == Payload.Type.BYTES) {
                 val debugMessage = String(payload.asBytes()!!)
                 _receivedDebugMessage.value = debugMessage // Update received debug message state
+                println(_receivedDebugMessage)
             }
         }
 
@@ -84,8 +85,8 @@ class NearbyViewModel @Inject constructor(
         }
     }
 
-    fun startAdvertising(message: String) {
-        messageToSend = message
+    fun startAdvertising(plant: Plant?) {
+        messageToSend = plant.toString()
         val advertisingOptions = AdvertisingOptions.Builder().setStrategy(strategy).build()
         connectionsClient.startAdvertising(
             "DeviceName", getApplication<Application>().packageName, connectionLifecycleCallback, advertisingOptions
