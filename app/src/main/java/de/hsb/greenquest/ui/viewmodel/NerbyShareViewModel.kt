@@ -23,6 +23,8 @@ import android.graphics.BitmapFactory
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import de.hsb.greenquest.domain.model.Plant
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
 
@@ -81,27 +83,58 @@ class NearbyViewModel @Inject constructor(
     }
 
     private val payloadCallback = object : PayloadCallback() {
+        private var receivedBytes = ByteArrayOutputStream()
         override fun onPayloadReceived(endpointId: String, payload: Payload) {
             if (payload.type == Payload.Type.BYTES && false) {
                 val debugMessage = String(payload.asBytes()!!)
                 _receivedDebugMessage.value = debugMessage
                 Log.d(TAG, "onPayloadReceived: Received payload from $endpointId: $debugMessage")
             }
-            if (true){
-                val bytes = payload.asBytes()
-                val hexString = bytes?.joinToString(separator = "") { "%02x".format(it) }
-                Log.d(TAG, "Byte array content: $hexString")
-                if (bytes != null) {
-                    val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-                    if (bitmap != null) {
-                        // Process the bitmap (e.g., display or save it)
-                        Log.d(TAG, "Received bitmap from $endpointId")
-                        // Handle further processing of the bitmap
-                    } else {
-                        Log.e(TAG, "Failed to decode byte array into Bitmap")
+            if (payload.type == Payload.Type.STREAM) {
+                Log.d(TAG, "Received stream payload from $endpointId")
+
+                val inputStream = payload.asStream()?.asInputStream()
+                inputStream?.let {
+                    try {
+                        val buffer = ByteArray(1024)
+                        var bytesRead: Int
+                        val outputStream = ByteArrayOutputStream()
+
+                        while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                            outputStream.write(buffer, 0, bytesRead)
+                        }
+
+                        receivedBytes.write(outputStream.toByteArray())
+
+                        // Check if inputStream.read() returns -1, indicating end of stream
+                        if (bytesRead == -1) {
+                            Log.d(TAG, "Received last chunk of stream from $endpointId")
+
+                            val imageBytes = receivedBytes.toByteArray()
+                            val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+
+                            if (bitmap != null) {
+
+                                Log.d(TAG, "Successfully decoded bitmap from $endpointId")
+                                Log.d(TAG, "BITMAPPPPP PP P PP P PP P P PP  $bitmap")
+                            } else {
+                                Log.e(TAG, "Failed to decode byte array into Bitmap")
+                            }
+
+                            // Reset for next image
+                            receivedBytes.reset()
+                        }
+
+                        outputStream.close()
+                    } catch (e: IOException) {
+                        Log.e(TAG, "Error reading stream: ${e.message}", e)
+                    } finally {
+                        try {
+                            inputStream.close()
+                        } catch (e: IOException) {
+                            Log.e(TAG, "Error closing inputStream: ${e.message}", e)
+                        }
                     }
-                } else {
-                    Log.e(TAG, "Received null byte array")
                 }
             }
         }
@@ -190,37 +223,32 @@ class NearbyViewModel @Inject constructor(
     }
     private fun sendImage(endpointId: String, plant: Plant?) {
         val imageUri = plant?.imagePath // Assuming imagePath is of type Uri
-        var inputStream: InputStream? = null
-        var imagePayload: Payload? = null
 
         try {
-            inputStream = imageUri?.let {
-                getApplication<Application>().contentResolver.openInputStream(
-                    it
-                )
+            val inputStream = imageUri?.let {
+                getApplication<Application>().contentResolver.openInputStream(it)
             }
+
             if (inputStream != null) {
-                val imageBytes = inputStream.readBytes()
-                Log.d("NearbyViewModel", "Read image bytes successfully, size: ${imageBytes.size}")
-                imagePayload = Payload.fromBytes(imageBytes)
+                // Adjust buffer size as needed
+                val bufferSize = 1024 * 1024 // 1MB buffer
+                val buffer = ByteArray(bufferSize)
+                var bytesRead: Int
+
+                // Read from input stream and send in chunks
+                while (inputStream.read(buffer).also { bytesRead = it } > 0) {
+                    val payload = Payload.fromStream(ByteArrayInputStream(buffer, 0, bytesRead))
+                    connectionsClient.sendPayload(endpointId, payload)
+                }
+
+                Log.d("NearbyViewModel", "Image sent successfully to $endpointId")
             } else {
                 Log.d("NearbyViewModel", "Input stream is null")
             }
-        } catch (e: Exception) {
-            Log.e("NearbyViewModel", "Exception occurred while reading image bytes: ${e.message}", e)
-        } finally {
-            try {
-                inputStream?.close() // Close the InputStream
-            } catch (e: IOException) {
-                Log.e("NearbyViewModel", "Error closing inputStream: ${e.message}", e)
-            }
-        }
 
-        if (imagePayload != null) {
-            Log.d("NearbyViewModel", "SEND INFO")
-            connectionsClient.sendPayload(endpointId, imagePayload)
-        } else {
-            Log.d("NearbyViewModel", "Payload is null")
+            inputStream?.close() // Close the InputStream
+        } catch (e: Exception) {
+            Log.e("NearbyViewModel", "Exception occurred while sending image: ${e.message}", e)
         }
     }
 }
