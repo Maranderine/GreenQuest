@@ -1,6 +1,7 @@
 package de.hsb.greenquest.ui.viewmodel
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
@@ -44,5 +45,7 @@ class PortfolioViewModel @Inject constructor(
 
     var openDeleteDialog by mutableStateOf(false)
     var openTextFieldDialog by mutableStateOf(false)
+
+    var selectedFilter by mutableIntStateOf(0)
 
 }
