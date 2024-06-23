@@ -54,20 +54,31 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.window.Dialog
 
 @Composable
 fun SearchCardsScreen(navController: NavController) {
     val portfolioViewModel = hiltViewModel<SearchCardsViewModel>()
+    val context = LocalContext.current
+
     val cards = portfolioViewModel.challengeCards.collectAsState().value
     val currIdx = portfolioViewModel.cardsIdx.collectAsState().value
     val loading: Boolean = portfolioViewModel.loading.collectAsState().value
-
     val points = portfolioViewModel.points.collectAsState().value
+    val error by portfolioViewModel.error.collectAsState()
 
+    LaunchedEffect(error) {
+        error?.let {
+            Toast.makeText(context, it, Toast.LENGTH_LONG).show()
+            portfolioViewModel.resetError()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -256,7 +267,9 @@ fun SearchCardsScreen(navController: NavController) {
         val dialogText = portfolioViewModel.DialogText.collectAsState()
 
         if (openDialog.value) {
+            var hint = cards[currIdx].hint
 
+            hint =  if(hint == "") "no hint was given" else hint
             Dialog(onDismissRequest = { portfolioViewModel.toggleDialog() }) {
                 Card(
                     modifier = Modifier
@@ -266,7 +279,7 @@ fun SearchCardsScreen(navController: NavController) {
                     shape = RoundedCornerShape(16.dp),
                 ) {
                     Text(
-                        text = "This is a minimal dialog",
+                        text = hint,
                         modifier = Modifier
                             .fillMaxSize()
                             .wrapContentSize(Alignment.Center),
@@ -275,16 +288,8 @@ fun SearchCardsScreen(navController: NavController) {
                 }
             }
 
-            /*AlertDialog(
-                onDismissRequest = { portfolioViewModel.toggleDialog() },
-                onConfirmation = {
-                    portfolioViewModel.toggleDialog()
-                    println("Confirmation registered") // Add logic here to handle confirmation.
-                },
-                dialogTitle = "Hint",
-                dialogText = dialogText.value,
-                icon = Icons.Default.Info
-            )*/
+            //TODO endless loading when all challenge cards loaded
+
         }
     }
 }
