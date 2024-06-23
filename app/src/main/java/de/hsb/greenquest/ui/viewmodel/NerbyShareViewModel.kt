@@ -183,9 +183,9 @@ class NearbyViewModel @Inject constructor(
     }
 
     private fun sendDebugMessage(endpointId: String, plant: Plant?) {
-        val payload = Payload.fromBytes(plant.toString().toByteArray())
-        connectionsClient.sendPayload(endpointId, payload)
-        Log.d(TAG, "sendDebugMessage: Sent payload to $endpointId: $plant")
+        //val payload = Payload.fromBytes(plant.toString().toByteArray())
+        //connectionsClient.sendPayload(endpointId, payload)
+        //Log.d(TAG, "sendDebugMessage: Sent payload to $endpointId: $plant")
         sendImage(endpointId, plant)
     }
     private fun sendImage(endpointId: String, plant: Plant?) {
