@@ -19,8 +19,11 @@ import com.google.android.gms.nearby.connection.Strategy
 import javax.inject.Inject
 import android.app.Application
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.lifecycle.AndroidViewModel
 import de.hsb.greenquest.domain.model.Plant
 import java.io.ByteArrayInputStream
@@ -47,6 +50,9 @@ class NearbyViewModel @Inject constructor(
 
     private val _receivedDebugMessage = mutableStateOf<String>("")
     val receivedDebugMessage: State<String> = _receivedDebugMessage
+
+    private val _receivedImageBitmap = mutableStateOf<ImageBitmap?>(null)
+    val receivedImageBitmap: State<ImageBitmap?> = _receivedImageBitmap
 
     private var messageToSend: Plant? = null
     private var currentEndpointId: String? = null
@@ -85,7 +91,7 @@ class NearbyViewModel @Inject constructor(
     private val payloadCallback = object : PayloadCallback() {
         private var receivedBytes = ByteArrayOutputStream()
         override fun onPayloadReceived(endpointId: String, payload: Payload) {
-            if (payload.type == Payload.Type.BYTES && false) {
+            if (payload.type == Payload.Type.BYTES) {
                 val debugMessage = String(payload.asBytes()!!)
                 _receivedDebugMessage.value = debugMessage
                 Log.d(TAG, "onPayloadReceived: Received payload from $endpointId: $debugMessage")
@@ -114,7 +120,7 @@ class NearbyViewModel @Inject constructor(
                             val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
 
                             if (bitmap != null) {
-
+                                _receivedImageBitmap.value = bitmap.asImageBitmap() // Convert Bitmap to ImageBitmap
                                 Log.d(TAG, "Successfully decoded bitmap from $endpointId")
                                 Log.d(TAG, "BITMAPPPPP PP P PP P PP P P PP  $bitmap")
                             } else {
@@ -216,9 +222,9 @@ class NearbyViewModel @Inject constructor(
     }
 
     private fun sendDebugMessage(endpointId: String, plant: Plant?) {
-        //val payload = Payload.fromBytes(plant.toString().toByteArray())
-        //connectionsClient.sendPayload(endpointId, payload)
-        //Log.d(TAG, "sendDebugMessage: Sent payload to $endpointId: $plant")
+        val payload = Payload.fromBytes(plant.toString().toByteArray())
+        connectionsClient.sendPayload(endpointId, payload)
+        Log.d(TAG, "sendDebugMessage: Sent payload to $endpointId: $plant")
         sendImage(endpointId, plant)
     }
     private fun sendImage(endpointId: String, plant: Plant?) {
