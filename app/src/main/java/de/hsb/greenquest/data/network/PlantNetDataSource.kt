@@ -53,7 +53,6 @@ class PlantNetDataSource @Inject constructor() {
             .post(req)
             .build()
 
-        //println("trying to call API...")
         val requestString = request.body.toString()
         println("CALL API WITH BODY: " + request.url + " "+ requestString)
 
