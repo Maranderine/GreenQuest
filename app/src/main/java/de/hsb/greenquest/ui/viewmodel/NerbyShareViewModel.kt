@@ -102,7 +102,7 @@ class NearbyViewModel @Inject constructor(
                 val inputStream = payload.asStream()?.asInputStream()
                 inputStream?.let {
                     try {
-                        val buffer = ByteArray((1024 * 1024) * 5 )
+                        val buffer = ByteArray((1024 * 1024) * 3 )
                         var bytesRead: Int
                            val outputStream = ByteArrayOutputStream()
 
@@ -237,7 +237,7 @@ class NearbyViewModel @Inject constructor(
 
             if (inputStream != null) {
                 // Adjust buffer size as needed
-                val bufferSize = (1024 * 1024) * 5 // 1MB buffer
+                val bufferSize = (1024 * 1024) * 3 // 1MB buffer
                 Log.d("NearbyViewModel", "Image sent successfully to $bufferSize")
                 val buffer = ByteArray(bufferSize)
                 var bytesRead: Int
