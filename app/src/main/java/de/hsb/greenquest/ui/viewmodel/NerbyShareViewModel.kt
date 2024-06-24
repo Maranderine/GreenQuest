@@ -89,7 +89,7 @@ class NearbyViewModel @Inject constructor(
     }
 
     private val payloadCallback = object : PayloadCallback() {
-        private var receivedBytes = ByteArrayOutputStream()
+        //private var receivedBytes = ByteArrayOutputStream()
         override fun onPayloadReceived(endpointId: String, payload: Payload) {
             if (payload.type == Payload.Type.BYTES) {
                 val debugMessage = String(payload.asBytes()!!)
@@ -102,21 +102,21 @@ class NearbyViewModel @Inject constructor(
                 val inputStream = payload.asStream()?.asInputStream()
                 inputStream?.let {
                     try {
-                        val buffer = ByteArray(1024)
+                        val buffer = ByteArray((1024 * 1024) * 5 )
                         var bytesRead: Int
-                        val outputStream = ByteArrayOutputStream()
+                           val outputStream = ByteArrayOutputStream()
 
                         while (inputStream.read(buffer).also { bytesRead = it } != -1) {
                             outputStream.write(buffer, 0, bytesRead)
                         }
 
-                        receivedBytes.write(outputStream.toByteArray())
+                        //receivedBytes.write(outputStream.toByteArray())
 
                         // Check if inputStream.read() returns -1, indicating end of stream
                         if (bytesRead == -1) {
                             Log.d(TAG, "Received last chunk of stream from $endpointId")
 
-                            val imageBytes = receivedBytes.toByteArray()
+                            val imageBytes = outputStream.toByteArray()
                             val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
 
                             if (bitmap != null) {
@@ -128,7 +128,7 @@ class NearbyViewModel @Inject constructor(
                             }
 
                             // Reset for next image
-                            receivedBytes.reset()
+                            outputStream.reset()
                         }
 
                         outputStream.close()
@@ -237,22 +237,23 @@ class NearbyViewModel @Inject constructor(
 
             if (inputStream != null) {
                 // Adjust buffer size as needed
-                val bufferSize = 1024 * 1024 // 1MB buffer
+                val bufferSize = (1024 * 1024) * 5 // 1MB buffer
+                Log.d("NearbyViewModel", "Image sent successfully to $bufferSize")
                 val buffer = ByteArray(bufferSize)
                 var bytesRead: Int
 
                 // Read from input stream and send in chunks
                 while (inputStream.read(buffer).also { bytesRead = it } > 0) {
                     val payload = Payload.fromStream(ByteArrayInputStream(buffer, 0, bytesRead))
+                    Log.d("NearbyViewModel", "Bytes READ $bytesRead")
                     connectionsClient.sendPayload(endpointId, payload)
                 }
-
+                inputStream.reset()
+                inputStream.close() // Close the InputStream
                 Log.d("NearbyViewModel", "Image sent successfully to $endpointId")
             } else {
                 Log.d("NearbyViewModel", "Input stream is null")
             }
-
-            inputStream?.close() // Close the InputStream
         } catch (e: Exception) {
             Log.e("NearbyViewModel", "Exception occurred while sending image: ${e.message}", e)
         }
