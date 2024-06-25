@@ -102,7 +102,7 @@ class NearbyViewModel @Inject constructor(
                 val inputStream = payload.asStream()?.asInputStream()
                 inputStream?.let {
                     try {
-                        val buffer = ByteArray((1024 * 1024) * 3 )
+                        val buffer = ByteArray(200000)
                         var bytesRead: Int
                            val outputStream = ByteArrayOutputStream()
 
@@ -237,18 +237,26 @@ class NearbyViewModel @Inject constructor(
 
             if (inputStream != null) {
                 // Adjust buffer size as needed
-                val bufferSize = (1024 * 1024) * 3 // 1MB buffer
+                val bufferSize = (200000)// 3MB buffer
+
                 Log.d("NearbyViewModel", "Image sent successfully to $bufferSize")
                 val buffer = ByteArray(bufferSize)
                 var bytesRead: Int
 
+                val bitmap2 = BitmapFactory.decodeStream(inputStream)
+                val byteArrayoutputStream = ByteArrayOutputStream()
+                bitmap2.compress(Bitmap.CompressFormat.JPEG, 0, byteArrayoutputStream) // Use higher quality
+
+                val byteArrayOutputStreamByteArray = byteArrayoutputStream.toByteArray()
+                val byteArrayInputStream = ByteArrayInputStream(byteArrayOutputStreamByteArray) // Single InputStream instance
+
                 // Read from input stream and send in chunks
-                while (inputStream.read(buffer).also { bytesRead = it } > 0) {
+                while (byteArrayInputStream.read(buffer).also { bytesRead = it } > 0) {
                     val payload = Payload.fromStream(ByteArrayInputStream(buffer, 0, bytesRead))
                     Log.d("NearbyViewModel", "Bytes READ $bytesRead")
                     connectionsClient.sendPayload(endpointId, payload)
                 }
-                inputStream.reset()
+                //inputStream.reset()
                 inputStream.close() // Close the InputStream
                 Log.d("NearbyViewModel", "Image sent successfully to $endpointId")
             } else {
