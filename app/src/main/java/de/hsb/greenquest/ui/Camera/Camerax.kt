@@ -22,11 +22,18 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -41,7 +48,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.window.Dialog
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -74,6 +83,7 @@ fun CameraPreviewScreen(navController: NavController) {
 
     var isCameraOpen by remember { mutableStateOf(true) } // Track if the camera is open
     var isConfirmImage by remember { mutableStateOf(false) }
+    var showDialog by remember { mutableStateOf(false) }
     var capturedImagePath by remember { mutableStateOf<String?>(null) } // Track the captured image path
 
     val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
@@ -203,11 +213,49 @@ fun CameraPreviewScreen(navController: NavController) {
                             Text(text = "add to Portfolio")
                         }
                         Button(onClick = {
-                            cameraViewModel.createChallengeCard(imagePath, "")
-                            isCameraOpen = true
+                            showDialog = true
                             cameraViewModel.plant = null
                         }) {
                             Text(text = "create Challenge Card")
+                        }
+                    }
+
+                    var text by remember { mutableStateOf("") }
+
+                    if(showDialog){
+                        Dialog(onDismissRequest = {
+                            showDialog = false
+                            isCameraOpen = true
+                        }) {
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(200.dp)
+                                    .padding(16.dp),
+                                shape = RoundedCornerShape(16.dp),
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .padding(5.dp),
+                                    verticalArrangement = Arrangement.Center,
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Spacer(Modifier.size(20.dp))
+                                    TextField(
+                                        value = text,
+                                        onValueChange = { text = it },
+                                        label = { Text("Optionally: give a hint") }
+                                    )
+                                    Spacer(Modifier.size(20.dp))
+                                    Button(onClick = {
+                                        showDialog = false
+                                        isCameraOpen = true
+                                        cameraViewModel.createChallengeCard(imagePath, text)
+                                    }) {
+                                        Text(text = "Confirm")
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -349,6 +397,7 @@ private fun captureImage(
                 println("Failed $exception")
             }
         })
+
 }
 
 

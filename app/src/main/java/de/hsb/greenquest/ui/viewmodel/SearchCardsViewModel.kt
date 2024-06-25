@@ -46,6 +46,10 @@ class SearchCardsViewModel @Inject constructor(
 
     val points: StateFlow<Int> = _points.asStateFlow()
 
+    private val _error = MutableStateFlow<String?>(null)
+
+    val error = _error.asStateFlow()
+
 
 
     init{
@@ -77,6 +81,10 @@ class SearchCardsViewModel @Inject constructor(
         }
     }
 
+    fun resetError() {
+        _error.value = null
+    }
+
     fun toggleDialog(){
         _DialogText.value = "no hint was given"
         _openDialog.value = !_openDialog.value
@@ -96,7 +104,12 @@ class SearchCardsViewModel @Inject constructor(
     fun loadChallengeCard(){
         _loading.value = true
         viewModelScope.launch {
-            challengeCardRepositoryImpl?.loadNewChallengeCard()
+            try {
+                challengeCardRepositoryImpl?.loadNewChallengeCard()
+            }catch (e: Exception){
+                _loading.value = false
+                _error.value = e.message
+            }
         }
     }
 }

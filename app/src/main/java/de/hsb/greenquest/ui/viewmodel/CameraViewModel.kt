@@ -94,36 +94,11 @@ class CameraViewModel @Inject constructor(
         }
     }
 
-    /*fun createChallengeCard(imagePath: String){
-        val storage: FirebaseStorage = FirebaseStorage.getInstance()
-        val storageRef: StorageReference = storage.getReference()
-
-        val imageName = "image.jpeg"
-
-
-        val imageRef: StorageReference = storageRef.child("images/challengeCards/$imageName")
-
-        val imageUri = Uri.fromFile(File(imagePath))
-
-        val uploadTask: UploadTask = imageRef.putFile(imageUri)
-
-        uploadTask.addOnProgressListener { taskSnapshot ->
-            val progress: Double =
-                100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount()
-        }.addOnSuccessListener { taskSnapshot ->
-            // This listener is triggered when the file is uploaded successfully.
-            // Using the below code you can get the download url of the file
-            imageRef.getDownloadUrl().addOnSuccessListener { uri ->
-                val imageUrl: String = uri.toString()
-            }
-        }.addOnFailureListener { exception -> }
-    }*/
-
-    fun createChallengeCard(imagePath: String, hint: String?){
+    fun createChallengeCard(imagePath: String, hint: String = ""){
         viewModelScope.launch(Dispatchers.IO) {
             plantNetRepository.identifyPlant(imagePath)?.apply {
                 print(this.toString())
-                challengeCardRepository?.createNewChallengeCard(this, imagePath)
+                challengeCardRepository?.createNewChallengeCard(this, imagePath, hint = hint)
             }
         }
     }
