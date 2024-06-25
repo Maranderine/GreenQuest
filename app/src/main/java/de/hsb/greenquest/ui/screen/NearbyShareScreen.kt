@@ -21,18 +21,8 @@ fun NearbyConnectionScreen(viewModel: NearbyViewModel = hiltViewModel<NearbyView
     val receivedDebugMessage by viewModel.receivedDebugMessage // Access received debug message
     val receivedBitmap by viewModel.receivedImageBitmap // Access received bitmap
 
-    var debugMessageToSend by remember { mutableStateOf("") } // State to hold debug message to send
-// Plant object to advertise
-    val plant = remember {
-        Plant(
-            name = "Sample Plant",
-            commonNames = listOf("Common Name 1", "Common Name 2"),
-            species = "Sample Species",
-            description = "This is a sample plant description.",
-            imagePath = Uri.parse("content://path/to/image"), // Example URI, adjust as needed
-            favorite = false // Set to true if debugging favorite functionality
-        )
-    }
+    //var debugMessageToSend by remember { mutableStateOf("") } // State to hold debug message to send
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -43,9 +33,9 @@ fun NearbyConnectionScreen(viewModel: NearbyViewModel = hiltViewModel<NearbyView
         }
         Text("Status: $status")
         Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = { viewModel.startAdvertising(plant) }) {
-            Text("Start Advertising")
-        }
+        //Button(onClick = { viewModel.startAdvertising(plant) }) {
+        //    Text("Start Advertising")
+        //}
         Spacer(modifier = Modifier.height(16.dp))
         Button(onClick = { viewModel.startDiscovery() }) {
             Text("Start Discovery")

@@ -64,7 +64,10 @@ import java.io.File
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-
+/*
+Tutorial used for the Implementation of The CameraX
+https://medium.com/@deepugeorge2007travel/mastering-camerax-in-jetpack-compose-a-comprehensive-guide-for-android-developers-92ec3591a189
+*/
 @Composable
 fun CameraPreviewScreen(navController: NavController) {
     val cameraViewModel = hiltViewModel<CameraViewModel>()
