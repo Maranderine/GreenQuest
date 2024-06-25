@@ -123,7 +123,7 @@ class NearbyViewModel @Inject constructor(
                                 Log.e(TAG, "Failed to decode byte array into Bitmap")
                             }
 
-                            // Reset for next image
+                            disconnect()
                             outputStream.reset()
                         }
 
@@ -242,7 +242,7 @@ class NearbyViewModel @Inject constructor(
 
                 val byteArrayOutputStreamByteArray = byteArrayoutputStream.toByteArray()
                 val byteArrayInputStream = ByteArrayInputStream(byteArrayOutputStreamByteArray) // Single InputStream instance
-                
+
                 while (byteArrayInputStream.read(buffer).also { bytesRead = it } > 0) {
                     val payload = Payload.fromStream(ByteArrayInputStream(buffer, 0, bytesRead))
                     Log.d("NearbyViewModel", "Bytes READ $bytesRead")
