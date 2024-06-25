@@ -1,9 +1,9 @@
 package de.hsb.greenquest.domain.model
 
-data class Challenge(
-    val id: Int = 0,
+data class DailyChallenge(
+    val challengeId: Int,
     val description: String,
-    val Plant: String,
+    val type: String,
     val requiredCount: Int,
     val progress: Int,
     val date: String?

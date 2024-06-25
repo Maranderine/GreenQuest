@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "560485106759",
+    "project_id": "greenquest-2314b",
+    "storage_bucket": "greenquest-2314b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:560485106759:android:8770bbaab525dbef5e1d62",
+        "android_client_info": {
+          "package_name": "de.hsb.greenquest"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAGCikW_DraExIIjFh55bzGARGoNNo6AFo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

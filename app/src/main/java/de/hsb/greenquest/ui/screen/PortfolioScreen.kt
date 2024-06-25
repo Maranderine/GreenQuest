@@ -4,6 +4,7 @@ import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,12 +17,19 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,23 +55,6 @@ import de.hsb.greenquest.ui.viewmodel.PortfolioViewModel
 
 @Composable
 fun PortfolioScreen(navController: NavController) {
-
-    var categorys = listOf(
-        "Recent",
-        "Favorite",
-        "Laubbäume",
-        "Nadelbäume",
-        "Blumen",
-        "Gräser",
-        "Sträucher",
-        "Kräuter",
-        "Gemüse",
-        "Obst",
-        "Farne",
-        "Flechten",
-        "Moose"
-    )
-
     Column(
         modifier = Modifier
             .padding(MaterialTheme.spacing.small)
@@ -75,55 +66,49 @@ fun PortfolioScreen(navController: NavController) {
         //PortfolioCategory(title = "Recent", names = test)
         val plantList by portfolioViewModel.plantListFlow.collectAsStateWithLifecycle()
 
-        LazyColumn {
-            items(categorys.size) { index ->
-                PortfolioCategory(
-                    title = categorys[index],
-                    navController = navController,
-                    portfolioViewModel = portfolioViewModel,
-                    plantList = plantList
-                )
-            }
-        }
+        MyDropdownMenu(listOf("Recent", "Favorite"), portfolioViewModel)
 
-//        Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
-//        LazyVerticalGrid(columns = GridCells.Adaptive(116.dp), content = {
-//            items(plantList.size) { index ->
-//                PortfolioElement(plantList[index], navController, portfolioViewModel)
-//            }
-//        })
-
-    }
-}
-
-@Composable
-fun PortfolioCategory(
-    title: String,
-    navController: NavController,
-    portfolioViewModel: PortfolioViewModel,
-    plantList: List<Plant>
-) {
-    Column() {
-        Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
-        Text(
-            text = title,
-            style = TextStyle(textDecoration = TextDecoration.Underline),
-            modifier = Modifier
-                .clickable {
-                    //navController.navigate(Screen.PortfolioCategoryScreen.route)
-                }
-        )
         Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
-        LazyRow {
-            val filteredPlants = if (title == "Favorite") {
+        LazyVerticalGrid(columns = GridCells.Adaptive(116.dp), content = {
+            val filteredPlants = if (portfolioViewModel.selectedFilter == 1) {
                 plantList.filter { it.favorite }
             } else {
                 plantList
             }
 
             items(filteredPlants.size) { index ->
-                    PortfolioElement(filteredPlants[index], navController, portfolioViewModel)
-                    Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+                PortfolioElement(filteredPlants[index], navController, portfolioViewModel)
+            }
+        })
+
+    }
+}
+
+@Composable
+fun MyDropdownMenu(items: List<String>, portfolioViewModel: PortfolioViewModel) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Box(
+
+    ) {
+        // Anchor for the dropdown menu (e.g., a Button)
+        Button(onClick = { expanded = true }) {
+            Text(items[portfolioViewModel.selectedFilter])
+        }
+
+        // Dropdown menu
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            items.forEachIndexed { index, item ->
+                DropdownMenuItem(onClick = {
+                    portfolioViewModel.selectedFilter = index
+                    expanded = false
+                },
+                text = {
+                    Text(item)
+                })
             }
         }
     }

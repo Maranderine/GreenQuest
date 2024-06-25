@@ -32,6 +32,7 @@ class PlantPictureRepositoryImpl @Inject constructor(
     }
 
     override suspend fun updatePlantPicture(plant: Plant) {
+        print("INSIDE UPDATE FUNCTION")
         plantPictureDao.updatePlantPicture(
             name = plant.name,
             favorite = plant.favorite,
@@ -45,6 +46,7 @@ class PlantPictureRepositoryImpl @Inject constructor(
         val plantEntity = plantPictureDao.getPlantPictureWithCommonNameByName(name = plant.name).firstOrNull()
 
         plantEntity?.let {
+            Log.d("DELTETE1", "")
             plantPictureMediaStoreLoader.deletePlantPicture(plant = plant)
             plantPictureDao.deletePlantPicture(plantPicture = plantEntity.plantPicture)
 
