@@ -89,7 +89,6 @@ class NearbyViewModel @Inject constructor(
     }
 
     private val payloadCallback = object : PayloadCallback() {
-        //private var receivedBytes = ByteArrayOutputStream()
         override fun onPayloadReceived(endpointId: String, payload: Payload) {
             if (payload.type == Payload.Type.BYTES) {
                 val debugMessage = String(payload.asBytes()!!)
@@ -110,9 +109,6 @@ class NearbyViewModel @Inject constructor(
                             outputStream.write(buffer, 0, bytesRead)
                         }
 
-                        //receivedBytes.write(outputStream.toByteArray())
-
-                        // Check if inputStream.read() returns -1, indicating end of stream
                         if (bytesRead == -1) {
                             Log.d(TAG, "Received last chunk of stream from $endpointId")
 
@@ -146,8 +142,6 @@ class NearbyViewModel @Inject constructor(
         }
 
         override fun onPayloadTransferUpdate(endpointId: String, update: PayloadTransferUpdate) {
-            // Handle transfer updates if needed
-            Log.d(TAG, "onPayloadTransferUpdate: Transfer update for endpoint $endpointId: $update")
         }
     }
 
@@ -236,8 +230,7 @@ class NearbyViewModel @Inject constructor(
             }
 
             if (inputStream != null) {
-                // Adjust buffer size as needed
-                val bufferSize = (200000)// 3MB buffer
+                val bufferSize = (200000)
 
                 Log.d("NearbyViewModel", "Image sent successfully to $bufferSize")
                 val buffer = ByteArray(bufferSize)
@@ -249,8 +242,7 @@ class NearbyViewModel @Inject constructor(
 
                 val byteArrayOutputStreamByteArray = byteArrayoutputStream.toByteArray()
                 val byteArrayInputStream = ByteArrayInputStream(byteArrayOutputStreamByteArray) // Single InputStream instance
-
-                // Read from input stream and send in chunks
+                
                 while (byteArrayInputStream.read(buffer).also { bytesRead = it } > 0) {
                     val payload = Payload.fromStream(ByteArrayInputStream(buffer, 0, bytesRead))
                     Log.d("NearbyViewModel", "Bytes READ $bytesRead")
