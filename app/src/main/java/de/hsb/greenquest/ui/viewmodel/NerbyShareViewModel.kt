@@ -43,7 +43,7 @@ import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
 import kotlin.random.Random
-import de.hsb.greenquest.ui.Camera.rotateBitmap
+import de.hsb.greenquest.ui.screen.rotateBitmap
 
 
 @HiltViewModel
