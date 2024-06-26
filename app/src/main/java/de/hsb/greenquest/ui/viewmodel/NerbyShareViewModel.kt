@@ -93,19 +93,16 @@ class NearbyViewModel @Inject constructor(
         override fun onConnectionInitiated(endpointId: String, connectionInfo: ConnectionInfo) {
             connectionsClient.acceptConnection(endpointId, payloadCallback)
             currentEndpointId = endpointId
-            Log.d(TAG, "onConnectionInitiated: Initiating connection with endpoint $endpointId")
         }
 
         override fun onConnectionResult(endpointId: String, result: ConnectionResolution) {
             if (result.status.isSuccess) {
                 _status.value = "Connected to $endpointId"
-                Log.d(TAG, "onConnectionResult: Connected to endpoint $endpointId")
                 messageToSend?.let {
                     sendDebugMessage(endpointId, it)
                 }
             } else {
                 _status.value = "Connection failed"
-                Log.d(TAG, "onConnectionResult: Connection to endpoint $endpointId failed")
             }
         }
 
@@ -114,23 +111,16 @@ class NearbyViewModel @Inject constructor(
             currentEndpointId = null
             stopAdvertising()
             stopDiscovery()
-            Log.d(TAG, "onDisconnected: Disconnected from endpoint $endpointId")
         }
     }
 
     private val payloadCallback = object : PayloadCallback() {
         override fun onPayloadReceived(endpointId: String, payload: Payload) {
-            //var debugMessage: String by mutableStateOf("")
             if (payload.type == Payload.Type.BYTES) {
                 debugMessage = String(payload.asBytes()!!)
                 _receivedDebugMessage.value = debugMessage
-                Log.d(TAG, "onPayloadReceived: Received payload from $endpointId: $debugMessage")
-                Log.d(TAG, debugMessage)
-                Log.d(TAG, createPlantFromString(debugMessage).toString())
             }
             if (payload.type == Payload.Type.STREAM) {
-                Log.d(TAG, "Received stream payload from $endpointId")
-
                 val inputStream = payload.asStream()?.asInputStream()
                 inputStream?.let {
                     try {
@@ -143,7 +133,6 @@ class NearbyViewModel @Inject constructor(
                         }
 
                         if (bytesRead == -1) {
-                            Log.d(TAG, "Received last chunk of stream from $endpointId")
 
                             val imageBytes = outputStream.toByteArray()
                             var bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
@@ -151,22 +140,16 @@ class NearbyViewModel @Inject constructor(
                             if (bitmap != null) {
                                 bitmap = rotateBitmap(bitmap,90f)
                                 _receivedImageBitmap.value = bitmap.asImageBitmap() // Convert Bitmap to ImageBitmap
-                                Log.d(TAG, "Successfully decoded bitmap from $endpointId")
-                                Log.d(TAG, "BITMAPPPPP PP P PP P PP P P PP  $bitmap")
                                 viewModelScope.launch(Dispatchers.IO) {
 
                                     val tempPlant = createPlantFromString(debugMessage)
-                                    Log.d(TAG, "TEMP PLANT $tempPlant")
 
                                     val uri = plantPictureMediaStoreLoader.savePlantPicture(tempPlant.name, bitmap)
-                                    Log.d(TAG, "URI $uri")
 
                                     plantPictureRepository.savePlantPicture(
                                         tempPlant.copy(imagePath = uri)
                                     )
                                 }
-
-
                             } else {
                                 Log.e(TAG, "Failed to decode byte array into Bitmap")
                             }
@@ -201,7 +184,6 @@ class NearbyViewModel @Inject constructor(
         ).addOnSuccessListener {
             _status.value = "Advertising..."
             advertisingStarted = true
-            Log.d(TAG, "startAdvertising: Started advertising")
         }.addOnFailureListener { e ->
             _status.value = "Advertising failed: ${e.message}"
             advertisingStarted = false
@@ -214,7 +196,6 @@ class NearbyViewModel @Inject constructor(
             connectionsClient.stopAdvertising()
             _status.value = "Stopped advertising"
             advertisingStarted = false
-            Log.d(TAG, "stopAdvertising: Stopped advertising")
         }
     }
 
@@ -225,18 +206,15 @@ class NearbyViewModel @Inject constructor(
                 override fun onEndpointFound(endpointId: String, info: DiscoveredEndpointInfo) {
                     connectionsClient.requestConnection("DeviceName", endpointId, connectionLifecycleCallback)
                     _endpoints.value = _endpoints.value + endpointId
-                    Log.d(TAG, "onEndpointFound: Found endpoint $endpointId")
                 }
 
                 override fun onEndpointLost(endpointId: String) {
                     _endpoints.value = _endpoints.value - endpointId
-                    Log.d(TAG, "onEndpointLost: Lost endpoint $endpointId")
                 }
             }, discoveryOptions
         ).addOnSuccessListener {
             _status.value = "Discovering..."
             discoveringStarted = true
-            Log.d(TAG, "startDiscovery: Started discovering")
         }.addOnFailureListener { e ->
             _status.value = "Discovery failed: ${e.message}"
             discoveringStarted = false
@@ -249,7 +227,6 @@ class NearbyViewModel @Inject constructor(
             connectionsClient.stopDiscovery()
             _status.value = "Stopped discovering"
             discoveringStarted = false
-            Log.d(TAG, "stopDiscovery: Stopped discovering")
         }
     }
 
@@ -259,14 +236,12 @@ class NearbyViewModel @Inject constructor(
             _status.value = "Disconnecting from $it..."
             stopAdvertising()
             stopDiscovery()
-            Log.d(TAG, "disconnect: Disconnecting from endpoint $it")
         }
     }
 
     private fun sendDebugMessage(endpointId: String, plant: Plant?) {
         val payload = Payload.fromBytes(plant.toString().toByteArray())
         connectionsClient.sendPayload(endpointId, payload)
-        Log.d(TAG, "sendDebugMessage: Sent payload to $endpointId: $plant")
         sendImage(endpointId, plant)
     }
     private fun sendImage(endpointId: String, plant: Plant?) {
@@ -280,7 +255,6 @@ class NearbyViewModel @Inject constructor(
             if (inputStream != null) {
                 val bufferSize = (200000)
 
-                Log.d("NearbyViewModel", "Image sent successfully to $bufferSize")
                 val buffer = ByteArray(bufferSize)
                 var bytesRead: Int
 
@@ -293,21 +267,18 @@ class NearbyViewModel @Inject constructor(
 
                 while (byteArrayInputStream.read(buffer).also { bytesRead = it } > 0) {
                     val payload = Payload.fromStream(ByteArrayInputStream(buffer, 0, bytesRead))
-                    Log.d("NearbyViewModel", "Bytes READ $bytesRead")
                     connectionsClient.sendPayload(endpointId, payload)
                 }
                 //inputStream.reset()
                 inputStream.close() // Close the InputStream
-                Log.d("NearbyViewModel", "Image sent successfully to $endpointId")
             } else {
-                Log.d("NearbyViewModel", "Input stream is null")
             }
         } catch (e: Exception) {
             Log.e("NearbyViewModel", "Exception occurred while sending image: ${e.message}", e)
         }
     }
 
-    public fun createPlantFromString(input: String): Plant {
+    fun createPlantFromString(input: String): Plant {
         val nameRegex = "name=([^,]+)".toRegex()
         val commonNamesRegex = "commonNames=\\[([^\\]]+)\\]".toRegex()
         val speciesRegex = "species=([^,]+)".toRegex()

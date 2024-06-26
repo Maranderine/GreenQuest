@@ -59,10 +59,11 @@ fun NearbyConnectionScreen(viewModel: NearbyViewModel = hiltViewModel<NearbyView
                 }
 
             Button(
-                onClick = { viewModel.disconnect() },
+                onClick = { viewModel.disconnect()
+                          viewModel.resetState()},
                 modifier = Modifier.padding(16.dp)
             ) {
-                Text("Disconnect")
+                Text("Disconnect / ResetUI")
             }
             }
         }
