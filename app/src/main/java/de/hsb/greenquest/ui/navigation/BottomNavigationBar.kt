@@ -2,6 +2,8 @@ package de.hsb.greenquest.ui.navigation
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Icon
@@ -19,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -53,7 +56,7 @@ fun BottomNavigationBar(navController: NavController) {
         BottomNavigationItem(
             title = Screen.NearbyShareScreen.title,
             route = Screen.NearbyShareScreen.route,
-            icon = painterResource(id = R.drawable.flash_card)
+            icon = painterResource(id = R.drawable.conn)
         ),
     )
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -83,7 +86,7 @@ fun BottomNavigationBar(navController: NavController) {
                     }
                 },
                 icon = {
-                    Image(item.icon, contentDescription = item.title)
+                    Image(item.icon, contentDescription = item.title, modifier =  if(item.title == Screen.NearbyShareScreen.title) Modifier.height(30.dp).width(30.dp) else Modifier)
                 },
                 label = {
                     Text(text = item.title)
