@@ -12,9 +12,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
@@ -86,6 +90,7 @@ fun PlantDetailScreen(navController: NavController, name: String?) {
             .padding(MaterialTheme.spacing.small)
             .padding(horizontal = 40.dp)
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
     ) {
         Row(
             modifier = Modifier
@@ -136,7 +141,8 @@ fun PlantDetailScreen(navController: NavController, name: String?) {
             modifier = Modifier
                 .padding(0.dp)
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(30.dp))
+                .height(400.dp)
+                .clip(RoundedCornerShape(15.dp))
         )
         //Spacer(modifier = Modifier.size(MaterialTheme.spacing.large))
         Spacer(modifier = Modifier.size(MaterialTheme.spacing.medium))
@@ -154,8 +160,10 @@ fun PlantDetailScreen(navController: NavController, name: String?) {
                 Spacer(modifier = Modifier.size(MaterialTheme.spacing.medium))
                 Box(
                     modifier = Modifier
+                        .clip(RoundedCornerShape(15.dp))
                         .background(MaterialTheme.colorScheme.secondaryContainer)
-                        .fillMaxSize()
+                        .fillMaxWidth()
+                        .requiredHeight(150.dp)
                 ) {
                     IconButton(
                         onClick = { portfolioViewModel.openTextFieldDialog = true },
@@ -177,7 +185,8 @@ fun PlantDetailScreen(navController: NavController, name: String?) {
                     }
                     if (plant?.description != "") {
                         Text(
-                            text = "Notes: " + (plant?.description ?: ""),
+                            modifier = Modifier.padding(MaterialTheme.spacing.medium),
+                            text = (plant?.description ?: ""),
                         )
                     }
                 }
