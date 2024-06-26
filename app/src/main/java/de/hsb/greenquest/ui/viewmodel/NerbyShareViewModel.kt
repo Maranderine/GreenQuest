@@ -305,7 +305,7 @@ class NearbyViewModel @Inject constructor(
         }
     }
 
-    fun createPlantFromString(input: String): Plant {
+    public fun createPlantFromString(input: String): Plant {
         val nameRegex = "name=([^,]+)".toRegex()
         val commonNamesRegex = "commonNames=\\[([^\\]]+)\\]".toRegex()
         val speciesRegex = "species=([^,]+)".toRegex()

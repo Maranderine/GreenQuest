@@ -43,7 +43,7 @@ object AppModule {
     fun provideDatabase(@ApplicationContext context: Context) =
         Room.databaseBuilder(context, ChallengeDatabase::class.java, GREEN_QUEST_DATABASE)
             .createFromAsset("database/dailyChallenges.db")
-            //fallbackToDestructiveMigration()
+            //.fallbackToDestructiveMigration()
             .build()
 
     @Provides

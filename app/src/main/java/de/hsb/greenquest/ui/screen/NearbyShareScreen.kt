@@ -7,6 +7,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
@@ -23,7 +24,6 @@ fun NearbyConnectionScreen(viewModel: NearbyViewModel = hiltViewModel<NearbyView
     val receivedDebugMessage by viewModel.receivedDebugMessage // Access received debug message
     val receivedBitmap by viewModel.receivedImageBitmap // Access received bitmap
 
-    //var debugMessageToSend by remember { mutableStateOf("") } // State to hold debug message to
 
     DisposableEffect(Unit) {
         onDispose {
@@ -34,33 +34,35 @@ fun NearbyConnectionScreen(viewModel: NearbyViewModel = hiltViewModel<NearbyView
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(32.dp)
             .verticalScroll(rememberScrollState())
     ) {
         Text("Status: $status")
-        Spacer(modifier = Modifier.height(16.dp))
-        //Button(onClick = { viewModel.startAdvertising(plant) }) {
-        //    Text("Start Advertising")
-        //}
-        Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = { viewModel.startDiscovery() }) {
+        Spacer(modifier = Modifier.height(32.dp))
+        Button(onClick = { viewModel.startDiscovery() }, modifier = Modifier.fillMaxSize()) {
             Text("Start Discovery")
         }
         Spacer(modifier = Modifier.height(16.dp))
-        Text("Discovered Endpoints:")
-        for (endpoint in endpoints) {
-            Text(endpoint)
-        }
+        Text(viewModel.createPlantFromString(receivedDebugMessage).commonNames.toString())
         Spacer(modifier = Modifier.height(16.dp))
-        Text("Received Debug Message:")
-        Text(receivedDebugMessage) // Display received debug message
-        Spacer(modifier = Modifier.height(16.dp))
-        Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = { viewModel.disconnect() }) {
-            Text("Disconnect")
-        }
         if (receivedBitmap != null) {
             DisplayReceivedImage(receivedBitmap!!)
+        }
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.BottomEnd
+        ) {
+                Text("Discovered Endpoints:")
+                for (endpoint in endpoints) {
+                    Text(endpoint)
+                }
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = { viewModel.disconnect() },
+                modifier = Modifier.padding(32.dp)
+            ) {
+                Text("Disconnect")
+            }
         }
     }
 }
