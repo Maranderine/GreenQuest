@@ -1,4 +1,4 @@
-package de.hsb.greenquest.ui.Camera
+package de.hsb.greenquest.ui.screen
 
 import android.content.ContentValues
 import android.content.Context
@@ -44,7 +44,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.style.TextAlign
@@ -60,7 +59,6 @@ import com.google.android.gms.location.LocationServices
 import de.hsb.greenquest.domain.model.Plant
 import de.hsb.greenquest.ui.navigation.Screen
 import de.hsb.greenquest.ui.viewmodel.CameraViewModel
-import java.io.File
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
