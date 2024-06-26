@@ -21,8 +21,6 @@ fun NearbyConnectionScreen(viewModel: NearbyViewModel = hiltViewModel<NearbyView
     val receivedDebugMessage by viewModel.receivedDebugMessage // Access received debug message
     val receivedBitmap by viewModel.receivedImageBitmap // Access received bitmap
 
-    //var debugMessageToSend by remember { mutableStateOf("") } // State to hold debug message to send
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -33,9 +31,6 @@ fun NearbyConnectionScreen(viewModel: NearbyViewModel = hiltViewModel<NearbyView
         }
         Text("Status: $status")
         Spacer(modifier = Modifier.height(16.dp))
-        //Button(onClick = { viewModel.startAdvertising(plant) }) {
-        //    Text("Start Advertising")
-        //}
         Spacer(modifier = Modifier.height(16.dp))
         Button(onClick = { viewModel.startDiscovery() }) {
             Text("Start Discovery")
