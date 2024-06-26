@@ -1,9 +1,12 @@
 package de.hsb.greenquest.data.local.mediastore
 
 import android.content.ContentUris
+import android.content.ContentValues
 import android.content.Context
 import android.database.ContentObserver
+import android.graphics.Bitmap
 import android.net.Uri
+import android.os.Environment
 import android.os.Handler
 import android.os.Looper
 import android.provider.MediaStore
@@ -15,6 +18,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.update
+import java.io.File
+import java.io.FileOutputStream
+import java.io.OutputStream
 import javax.inject.Inject
 
 class PlantPictureMediaStoreLoader @Inject constructor(
@@ -41,8 +47,48 @@ class PlantPictureMediaStoreLoader @Inject constructor(
         loadPicturesFromMediaStore()
     }
 
-    /*override*/ suspend fun savePlantPicture(plant: Plant) {
-        // TODO: Implement save functionality
+    fun savePlantPicture(fileName: String, imageBitmap: Bitmap): Uri? {
+        val resolver = applicationContext.contentResolver
+
+        val imagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+        val greenQuestDir = File(imagesDir, "GreenQuest")
+        greenQuestDir.mkdirs()
+        val imageFile = File(greenQuestDir, fileName)
+
+        try {
+            val outputStream: OutputStream = FileOutputStream(imageFile)
+            imageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+            outputStream.flush()
+            outputStream.close()
+
+            val contentValues = ContentValues().apply {
+                put(MediaStore.Images.Media.DISPLAY_NAME, fileName)
+                put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+                put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/GreenQuest/")
+                put(MediaStore.Images.Media.IS_PENDING, 1)
+            }
+
+            val imageUri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+            Log.d("NearbyViewModel:MediaStoreLoader", "Image saved at: $imageUri")
+            Log.d("NearbyViewModel:MediaStoreLoader", "FileName: $fileName")
+
+            if (imageUri != null) {
+                resolver.openOutputStream(imageUri)?.use { output ->
+                    imageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, output)
+                }
+
+                contentValues.clear()
+                contentValues.put(MediaStore.Images.Media.IS_PENDING, 0)
+                resolver.update(imageUri, contentValues, null, null)
+
+                return imageUri // Return the Uri of the saved picture
+            }
+
+        } catch (e: Exception) {
+            Log.e("MediaStoreLoader", "Error saving image: ${e.message}")
+        }
+
+        return null // Return null if saving failed
     }
 
     /*override*/ fun getAllPlantPictures(): Flow<MutableList<Plant>> {

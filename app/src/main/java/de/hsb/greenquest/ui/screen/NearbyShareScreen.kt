@@ -1,6 +1,8 @@
 import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -21,16 +23,20 @@ fun NearbyConnectionScreen(viewModel: NearbyViewModel = hiltViewModel<NearbyView
     val receivedDebugMessage by viewModel.receivedDebugMessage // Access received debug message
     val receivedBitmap by viewModel.receivedImageBitmap // Access received bitmap
 
-    //var debugMessageToSend by remember { mutableStateOf("") } // State to hold debug message to send
+    //var debugMessageToSend by remember { mutableStateOf("") } // State to hold debug message to
+
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.resetState()
+        }
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
+            .verticalScroll(rememberScrollState())
     ) {
-        if (receivedBitmap != null) {
-            DisplayReceivedImage(receivedBitmap!!)
-        }
         Text("Status: $status")
         Spacer(modifier = Modifier.height(16.dp))
         //Button(onClick = { viewModel.startAdvertising(plant) }) {
@@ -53,12 +59,15 @@ fun NearbyConnectionScreen(viewModel: NearbyViewModel = hiltViewModel<NearbyView
         Button(onClick = { viewModel.disconnect() }) {
             Text("Disconnect")
         }
+        if (receivedBitmap != null) {
+            DisplayReceivedImage(receivedBitmap!!)
+        }
     }
 }
 @Composable
 fun DisplayReceivedImage(imageBitmap: ImageBitmap) {
     Box(
-        modifier = Modifier.fillMaxSize()
+        //modifier = Modifier.fillMaxSize()
     ) {
         Image(
             bitmap = imageBitmap,
