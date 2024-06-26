@@ -260,7 +260,7 @@ class NearbyViewModel @Inject constructor(
 
                 val bitmap2 = BitmapFactory.decodeStream(inputStream)
                 val byteArrayoutputStream = ByteArrayOutputStream()
-                bitmap2.compress(Bitmap.CompressFormat.JPEG, 15, byteArrayoutputStream) // Use higher quality
+                bitmap2.compress(Bitmap.CompressFormat.JPEG, 10, byteArrayoutputStream) // Use higher quality
 
                 val byteArrayOutputStreamByteArray = byteArrayoutputStream.toByteArray()
                 val byteArrayInputStream = ByteArrayInputStream(byteArrayOutputStreamByteArray) // Single InputStream instance

@@ -61,6 +61,8 @@ import de.hsb.greenquest.ui.navigation.Screen
 import de.hsb.greenquest.ui.viewmodel.CameraViewModel
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
+import kotlin.random.Random
+import kotlin.random.nextInt
 
 /*
 Tutorial used for the Implementation of The CameraX
@@ -311,24 +313,16 @@ private fun addGPSMetadata(filePath: String, location: Location) {
 
 private fun displayImage(imageView: ImageView, filePath: String) {
     // Decode the bitmap from the file
-    val bitmap = BitmapFactory.decodeFile(filePath)
+    var bitmap = BitmapFactory.decodeFile(filePath)
 
     // Check if the bitmap was successfully decoded
     if (bitmap != null) {
         Log.d("FILEPATH", filePath)
 
-        // Check if the image needs to be rotated
-        val rotationDegrees = 90
-
-        // Rotate the bitmap if needed
-        val rotatedBitmap = if (rotationDegrees != 0) {
-            rotateBitmap(bitmap, rotationDegrees.toFloat())
-        } else {
-            bitmap
-        }
+        bitmap = rotateBitmap(bitmap, 90f)
 
         // Set the rotated bitmap to the ImageView
-        imageView.setImageBitmap(rotatedBitmap)
+        imageView.setImageBitmap(bitmap)
     } else {
         // Handle the case where the bitmap could not be decoded
         Log.e("displayImage", "Failed to decode bitmap from file: $filePath")
@@ -347,7 +341,8 @@ private fun captureImage(
     location: Location?,
     onImageCaptured: (String) -> Unit
 ) {
-    val name = "GreenQuest.jpeg"
+    val randomNumber = Random.nextInt(Int.MAX_VALUE)
+    val name = "${randomNumber}GreenQuest.jpeg"
     val contentValues = ContentValues().apply {
         put(MediaStore.MediaColumns.DISPLAY_NAME, name)
         put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
