@@ -63,14 +63,6 @@ class PlantPictureMediaStoreLoader @Inject constructor(
         }
     }
 
-    // TODO used?
-    fun deletePicture(uri: Uri) {
-        val contentResolver = applicationContext.contentResolver
-
-        contentResolver.delete(uri, null, null) // Delete the picture from the MediaStore
-
-    }
-
     /**
      * loads images from mediastore...duh
      */
