@@ -1,12 +1,8 @@
 package de.hsb.greenquest.ui.viewmodel
 
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import de.hsb.greenquest.data.repository.AchievementsRepositoryImpl
 import de.hsb.greenquest.data.repository.ChallengeCardRepositoryImpl
 import de.hsb.greenquest.domain.model.challengeCard
 import de.hsb.greenquest.domain.repository.AchievementsRepository
@@ -53,10 +49,12 @@ class SearchCardsViewModel @Inject constructor(
 
 
     init{
+        // set loading status while calling repo
         _loading.value = true
         viewModelScope.launch {
-            challengeCardRepositoryImpl?.getActiveChallengeCards()?.collect{
+            challengeCardRepositoryImpl?.getActiveChallengeCardsDataStream()?.collect{
                 _challengeCards.value = it
+                // end laoding
                 _loading.value = false
             }
 
@@ -73,6 +71,9 @@ class SearchCardsViewModel @Inject constructor(
         }
     }
 
+    /**
+     * change User position in list of challenge Cards
+     */
     fun changeIdx(value: Int){
         _cardsIdx.value = when(value){
             in Int.MIN_VALUE..0 -> 0
@@ -81,19 +82,31 @@ class SearchCardsViewModel @Inject constructor(
         }
     }
 
+    /**
+     * resets error Toast
+     */
     fun resetError() {
         _error.value = null
     }
 
+    /**
+     * sets dialog visible
+     */
     fun toggleDialog(){
         _DialogText.value = "no hint was given"
         _openDialog.value = !_openDialog.value
     }
 
+    /**
+     * sets text of dialog
+     */
     fun setDialogText(text: String){
         _DialogText.value = text
     }
 
+    /**
+     * deletes card from active cards
+     */
     fun deleteCard(){
         _loading.value = true
         viewModelScope.launch {
@@ -101,6 +114,11 @@ class SearchCardsViewModel @Inject constructor(
             _cardsIdx.value = if(cardsIdx.value > _challengeCards.value.size) (_cardsIdx.value -1) else _cardsIdx.value
         }
     }
+
+    /**
+     * downloads a new challenge card from cloud
+     * saves as active in local challenge cards database
+     */
     fun loadChallengeCard(){
         _loading.value = true
         viewModelScope.launch {
@@ -113,4 +131,3 @@ class SearchCardsViewModel @Inject constructor(
         }
     }
 }
-//TODO threshhold plant net

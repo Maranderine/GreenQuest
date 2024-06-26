@@ -42,24 +42,33 @@ class CameraViewModel @Inject constructor(
     private val dailyChallengeRepository: DailyChallengeRepository,
     private val challengeCardRepository: ChallengeCardRepository,
     private val plantPictureMediaStoreLoader: PlantPictureMediaStoreLoader
-    //private val firebaseApp: FirebaseApp?,
 ): ViewModel() {
 
     var plant by mutableStateOf<Plant?>(null)
     private val _error = MutableStateFlow<String?>(null)
     val error = _error.asStateFlow()
+    val _shouldNavigate = MutableStateFlow(false)
 
+    /**
+     * saves plant picture and navigates to the the associated portfolio entry
+     */
     fun savePicture(plantFileName: String, imagePath: String) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 takePictureUseCase.takePicture(plantFileName, imagePath)
                 _shouldNavigate.value = true
             } catch (e: PlantIdentificationException) {
+                // change of error value triggers Toast display
+
                 _error.value = e.message
             }
         }
     }
 
+    /**
+     * deletes image
+     * @param String file path of image
+     */
     fun deleteImage(imagePath: String) {
         val imageFile = File(imagePath)
         if (imageFile.exists()) {
@@ -74,12 +83,14 @@ class CameraViewModel @Inject constructor(
         }
     }
 
-    val _shouldNavigate = MutableStateFlow(false)
-
     fun resetError() {
         _error.value = null
     }
 
+    /**
+     * identifies given plant image
+     * @param String path to plant image file
+     */
     fun identify(imagePath: String){
         viewModelScope.launch(Dispatchers.IO) {
             try {
@@ -94,6 +105,11 @@ class CameraViewModel @Inject constructor(
         }
     }
 
+    /**
+     * creates challenge card from a given plant image
+     * @param String path to image file
+     * @param String? optional, hint that can be added to the challenge card to help find the displayed plant
+     */
     fun createChallengeCard(imagePath: String, hint: String = ""){
         viewModelScope.launch(Dispatchers.IO) {
             plantNetRepository.identifyPlant(imagePath)?.apply {

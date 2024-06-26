@@ -1,11 +1,9 @@
 package de.hsb.greenquest.domain.repository
 
 import de.hsb.greenquest.data.local.entity.ChallengeCardEntity
-import de.hsb.greenquest.data.repository.toChallengeCard
 import de.hsb.greenquest.domain.model.Plant
 import de.hsb.greenquest.domain.model.challengeCard
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.transform
 
 interface ChallengeCardRepository {
     suspend fun loadNewChallengeCard(): challengeCard?
@@ -16,8 +14,8 @@ interface ChallengeCardRepository {
 
     fun mapEntitiesToModel(challengeCardEntity: ChallengeCardEntity, imgPath: String): challengeCard
 
-    fun getActiveChallengeCards(): Flow<List<challengeCard>>
+    fun getActiveChallengeCardsDataStream(): Flow<List<challengeCard>>
 
-    suspend fun getAvailableChallengeCardsData(): List<ChallengeCardEntity>
+    suspend fun getActiveChallengeCardsData(): List<ChallengeCardEntity>
 
 }

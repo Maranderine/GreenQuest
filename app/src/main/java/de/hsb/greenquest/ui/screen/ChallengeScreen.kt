@@ -56,8 +56,8 @@ fun ChallengeScreen(navController: NavController, modifier: Modifier = Modifier,
     val challenges = viewModel.challengeList.collectAsState().value
     val done = challenges.count{ it.done }
 
-    val progress = viewModel.progress.value?.toFloat()
-    val requiredCount = viewModel.requiredCount.value?.toFloat()
+    val progress = viewModel.progress.value?.toFloat() // how many challenges are already done?
+    val requiredCount = viewModel.requiredCount.value?.toFloat() // how many challenges are there to do?
 
     val relativeProgress: Float = progress?.let { p ->
         requiredCount?.let {
@@ -74,7 +74,7 @@ fun ChallengeScreen(navController: NavController, modifier: Modifier = Modifier,
         in 0.6..0.8 -> R.drawable.plant3
         in 0.8..1.1 -> R.drawable.plant4
         else -> R.drawable.plant0
-    }
+    } // illustration of plant, grows with increasing number of finished challenges
 
     Column(
         modifier = Modifier
@@ -90,6 +90,7 @@ fun ChallengeScreen(navController: NavController, modifier: Modifier = Modifier,
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ){
+            //Toggle between daily challenges and cards
             Row(
                 Modifier
                     .fillMaxWidth(),
@@ -102,13 +103,13 @@ fun ChallengeScreen(navController: NavController, modifier: Modifier = Modifier,
                     Text(text = "cards")
                 }
             }
+            // user score
             Text(text = "points: $points", color= Color.White)
+
+            //plant illustration
             Image(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .clickable { coroutineScope.launch {
-                        viewModel.refreshChallenges()
-                    } }
                     .size(200.dp)
                     .clip(CircleShape),
                 painter = painterResource(imageResource),
@@ -120,7 +121,6 @@ fun ChallengeScreen(navController: NavController, modifier: Modifier = Modifier,
                 Text(text = challenges.size.toString(), color = Color.White)
             }
         }
-        //Spacer(modifier = Modifier.height(16.dp))
         Row(
             Modifier
                 .weight(1f)
@@ -128,6 +128,7 @@ fun ChallengeScreen(navController: NavController, modifier: Modifier = Modifier,
                 .padding(horizontal = 40.dp)
         ){
 
+            // show refresh button if no daily challenges are active
             if(challenges?.size == 0){
                 Column(
                     modifier = Modifier
@@ -157,16 +158,11 @@ fun ChallengeScreen(navController: NavController, modifier: Modifier = Modifier,
                 items(challenges.size ?: 0) { index ->
                     ChallengeCard(
                         modifier = Modifier.clickable { coroutineScope.launch {
-                            //val challenge = challenges.get(index)
-                            //viewModel.updateChallenge(challenge.copy(progress = challenge.progress+1))
                         } },
                         challenge = challenges[index]
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                 }
-                //item {
-                //  Spacer(modifier = Modifier.height(16.dp))
-                //}
             }
         }
     }
@@ -191,11 +187,9 @@ fun ChallengeCard(modifier: Modifier = Modifier.background(SecondaryVariantDark)
 
                         .weight(0.2f),
                     contentAlignment = Alignment.Center
-                    //   .background(color = Color.Yellow),
                 ){
                     CircularProgressIndicator(
                         progress = challenge.progress.toFloat() / challenge.requiredCount.toFloat() ,
-                        //modifier = Modifier.fillMaxWidth(),
                     )
                     Text(
                         text = challenge.progress.toString(),

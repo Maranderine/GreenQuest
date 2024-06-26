@@ -69,7 +69,7 @@ import kotlin.coroutines.suspendCoroutine
 fun CameraPreviewScreen(navController: NavController) {
     val cameraViewModel = hiltViewModel<CameraViewModel>()
 
-    val lensFacing = CameraSelector.LENS_FACING_BACK
+    val lensFacing = CameraSelector.LENS_FACING_BACK // direction of camera
     val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
     val preview = Preview.Builder().build()
@@ -101,6 +101,7 @@ fun CameraPreviewScreen(navController: NavController) {
         preview.setSurfaceProvider(previewView.surfaceProvider)
     }
 
+    // error if plant could not be identified, triggers toast
     LaunchedEffect(error) {
         error?.let {
             isCameraOpen = true
@@ -109,6 +110,7 @@ fun CameraPreviewScreen(navController: NavController) {
         }
     }
 
+    // triggers navigating to portfolio
     LaunchedEffect(shouldNavigate) {
         if (shouldNavigate) {
             navController.navigate(Screen.PortfolioScreen.route) {
@@ -137,7 +139,7 @@ fun CameraPreviewScreen(navController: NavController) {
                 Text(text = "Capture Image")
             }
         } else if(isConfirmImage) {
-            // Display the captured image
+            // Display the captured image and ask for confirmation
             capturedImagePath?.let { imagePath ->
                 val imageView = ImageView(context)
                 displayImage(imageView, imagePath)
@@ -168,14 +170,14 @@ fun CameraPreviewScreen(navController: NavController) {
                 }
             }
         }else{
-            //achievements
+            // send to PlantNet API
             capturedImagePath?.let { imagePath ->
                 val plant: Plant? = cameraViewModel.plant
                 if(plant == null){
                     cameraViewModel.identify(imagePath)
                 }
 
-
+                // display image
                 val imageView = ImageView(context)
                 displayImage(imageView, imagePath)
                 AndroidView(
@@ -185,6 +187,7 @@ fun CameraPreviewScreen(navController: NavController) {
                         .fillMaxWidth()
                 )
 
+                // display identified plants name
                 var resString: String = "give us a moment to identify the plant..."
                 plant?.name?.let { resString = "congrats, you've found a $it !!" }
                 Column(
@@ -198,6 +201,7 @@ fun CameraPreviewScreen(navController: NavController) {
                             .fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center
                     ) {
+                        // add to portfolio button
                         Button(onClick = {
                             isCameraOpen = true
                             cameraViewModel.plant = null
@@ -212,6 +216,8 @@ fun CameraPreviewScreen(navController: NavController) {
                         }) {
                             Text(text = "add to Portfolio")
                         }
+
+                        // create challenge card button
                         Button(onClick = {
                             showDialog = true
                             cameraViewModel.plant = null
@@ -219,9 +225,9 @@ fun CameraPreviewScreen(navController: NavController) {
                             Text(text = "create Challenge Card")
                         }
                     }
-
                     var text by remember { mutableStateOf("") }
 
+                    // dialog for taking user input for the hint when creating challenge card
                     if(showDialog){
                         Dialog(onDismissRequest = {
                             showDialog = false
@@ -397,9 +403,7 @@ private fun captureImage(
                 println("Failed $exception")
             }
         })
-
 }
-
 
 private suspend fun Context.getCameraProvider(): ProcessCameraProvider =
     suspendCoroutine { continuation ->

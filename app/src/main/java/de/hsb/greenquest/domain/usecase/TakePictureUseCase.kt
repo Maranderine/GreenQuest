@@ -11,12 +11,15 @@ import javax.inject.Inject
 
 class PlantIdentificationException(message: String) : Exception(message)
 
+/**
+ * buisness logic behind taking a picture in the camera screen
+ */
 class TakePictureUseCase @Inject constructor(
     private val repository: PlantPictureRepository,
     private val plantNetRepository: PlantNetRepository
 ) {
     suspend fun takePicture(plantFileName: String, imagePath: String) {
-        //var plant: Plant = Plant()
+
         try {
             plantNetRepository.identifyPlant(imagePath)?.let { remotePlant ->
                 repository.savePlantPicture(
@@ -31,7 +34,10 @@ class TakePictureUseCase @Inject constructor(
                 )
             } ?: throw PlantIdentificationException("No Plant Recognized. Pleas Try Again")
         } catch (e: Exception) {
+            // eg. if response from PlantNet API was 404 not found --> could not be identified
 
+            // delete picture from gallery:
+            // create dummy plant
             val plant = Plant(
                 name = plantFileName,
                 imagePath = null,
@@ -40,8 +46,10 @@ class TakePictureUseCase @Inject constructor(
                 species = "",
                 commonNames = listOf("")
             )
+            // save as dummy portfolio entry
             repository.savePlantPicture(plant)
 
+            // delete portfolio entry together with picture from gallery.
             val plant1 = repository.getAllPlantPictures().map {
                 it.find { p -> p.name == plant.name }
             }

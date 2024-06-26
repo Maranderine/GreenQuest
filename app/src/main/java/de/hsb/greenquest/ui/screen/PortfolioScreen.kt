@@ -60,10 +60,8 @@ fun PortfolioScreen(navController: NavController) {
             .padding(MaterialTheme.spacing.small)
             .fillMaxSize()
     ) {
-        //ImageGalleryApp()
         val portfolioViewModel = hiltViewModel<PortfolioViewModel>()
 
-        //PortfolioCategory(title = "Recent", names = test)
         val plantList by portfolioViewModel.plantListFlow.collectAsStateWithLifecycle()
 
         MyDropdownMenu(listOf("Recent", "Favorite"), portfolioViewModel)

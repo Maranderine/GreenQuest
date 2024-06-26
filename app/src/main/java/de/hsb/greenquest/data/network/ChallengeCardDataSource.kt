@@ -8,11 +8,17 @@ import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
-//GETS ONLINE DATA OF CHALLENGE CARDS
+/**
+ * saves and loads data for challenge cards from a cloud firestore database
+ */
 class ChallengeCardDataSource @Inject constructor(){
+
+    // instance of the database
     private val db = Firebase.firestore
 
     fun saveChallengeCardData(imagePath: String, name: String, hint: String, location: String){
+
+        // create firestore document
         val card = hashMapOf(
             "imagePath" to imagePath,
             "name" to name,
@@ -20,6 +26,7 @@ class ChallengeCardDataSource @Inject constructor(){
             "location" to location
         )
 
+        // save to database
         db.collection("challengeCards")
             .add(card)
             .addOnSuccessListener { documentReference ->
@@ -30,30 +37,14 @@ class ChallengeCardDataSource @Inject constructor(){
             }
     }
 
-    suspend fun getChallengeCardDataByIndex(idx: Int): Map<String, Any>?{
-        val cards = getChallengeCards()
-        if(cards.size > 0){
-            return cards.get(idx).data
-        }
-        else{
-            return null
-        }
-    }
-
+    /**
+     * get all challenge cards documents that are stored in the cloud database
+     *
+     * @return List<DocumentSnapshot> List that contains the data of challenge card documents
+     */
     suspend fun getChallengeCards(): List<DocumentSnapshot>{
 
         val x = db.collection("challengeCards").get().await().documents
         return x
     }
-    /*suspend fun countChallengeCards(): Int{
-        try{
-            val lastImagePath =  db.collection("challengeCards").get().await().documents.last().data?.get("imagePath") as String
-            val re = Regex("(?<=images/challengeCards/image)[0-9]+(?=.jpeg)")
-            var returnVal = re.find(lastImagePath)?.value
-            var returnValue = returnVal?.toIntOrNull()?.plus(1)
-            return returnValue?: 0
-        }catch(err: Exception){
-            return 0
-        }
-    }*/
 }

@@ -11,27 +11,42 @@ import java.io.File
 import java.util.UUID
 import javax.inject.Inject
 
+/**
+ * Responsible for downloading or uploading images associated to a challenge card.
+ * from/ to Firebase cloud storage
+ */
 class ChallengeCardPicturesDataSource @Inject constructor() {
 
+    /**
+     * updloads
+     *
+     * @param String path of the image to upload
+     * @return String path in storage
+     */
     suspend fun uploadImageToStorage(imagePath: String): String{
+        // instance of storage
         val storage: FirebaseStorage = FirebaseStorage.getInstance()
         val storageRef: StorageReference = storage.getReference()
+
+        // unique id for image in storage
         var uniqueID = UUID.randomUUID().toString()
 
-
+        // defining the path in the storage where to save
         val imageName = "$uniqueID.jpeg"
         val storagePath = "images/challengeCards/$imageName"
+
+        // get reference to location
         val imageRef: StorageReference = storageRef.child(storagePath)
+
         val imageUri = Uri.fromFile(File(imagePath))
 
+        // start updloading
         val uploadTask: UploadTask = imageRef.putFile(imageUri)
-
         uploadTask.addOnProgressListener { taskSnapshot ->
             val progress: Double =
                 100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount()
         }.addOnSuccessListener { taskSnapshot ->
-            // This listener is triggered when the file is uploaded successfully.
-            // Using the below code you can get the download url of the file
+            // listener is triggered when the file is uploaded successfully.
             imageRef.getDownloadUrl().addOnSuccessListener { uri ->
                 val imageUrl: String = uri.toString()
             }
@@ -39,6 +54,12 @@ class ChallengeCardPicturesDataSource @Inject constructor() {
         return storagePath
     }
 
+    /**
+     * download
+     *
+     * @param String path to image in cloud storage
+     * @return File of Image if successfull, else null
+     */
     suspend fun downloadImageFromStorage(imgPath: String): File?{
         try{
             val storage: FirebaseStorage = FirebaseStorage.getInstance()

@@ -19,12 +19,19 @@ import kotlinx.coroutines.flow.Flow
 import org.json.JSONObject
 import java.io.File
 
+/**
+ * intermediary class to use the plantNet Datasource
+ * handles buisness logic of sending http request to the API to identify a plant
+ */
 class PlantNetRepositoryImpl@Inject constructor(
     private val plantNetDataSource: PlantNetDataSource,
     private val parser: JsonParser = JsonParser()
 ): PlantNetRepository {
 
-    val pool: ExecutorService = Executors.newFixedThreadPool(4);
+    /**
+     * identifies plant
+     * @param String filepath of plant picture
+     */
     override suspend fun identifyPlant(filepath: String): Plant?{
         val gson: Gson = Gson()
         val listType = object : TypeToken<List<String>>() {}.type
@@ -32,8 +39,10 @@ class PlantNetRepositoryImpl@Inject constructor(
         val file = File(filepath)
         val uri = Uri.fromFile(file)
 
-        
+        // call API
         val results = plantNetDataSource.getPlantInfo(filepath)
+
+        // map JSON result to plant object
         val resultPlant = results?.let{ it ->
             (JsonParser.parseString(it) as JsonObject)
                 .getAsJsonArray("results")[0].asJsonObject
@@ -61,13 +70,4 @@ class PlantNetRepositoryImpl@Inject constructor(
         }
         return resultPlant
     }
-
-    fun mapJsonToPlant(){
-        //TODO mapping function
-    }
-
 }
-
-// TODO map json result to plant object
-// TODO create event data class
-// TODO create event dispatcher with mutablestateflow

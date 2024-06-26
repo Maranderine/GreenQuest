@@ -23,6 +23,10 @@ class PortfolioViewModel @Inject constructor(
     private val _plantListFlow = MutableStateFlow<List<Plant>>(mutableListOf())
     val plantListFlow get() = _plantListFlow.asStateFlow()
 
+    var openDeleteDialog by mutableStateOf(false)
+    var openTextFieldDialog by mutableStateOf(false)
+    var selectedFilter by mutableIntStateOf(0)
+
     init {
         viewModelScope.launch(Dispatchers.IO) {
             plantPictureRepository.getAllPlantPictures().collect { plantList ->
@@ -31,21 +35,23 @@ class PortfolioViewModel @Inject constructor(
         }
     }
 
+    /**
+     * updates data of portfolio entry that is associated to a given plant
+     * @param plant of which the entry should be updated
+     */
     fun updatePlant(plant: Plant) {
         viewModelScope.launch(Dispatchers.IO) {
             plantPictureRepository.updatePlantPicture(plant)
         }
     }
 
+    /**
+     * deletes database entries of portfolio entry that is associated to a given plant
+     * @param plant of which the entry should be deleted
+     */
     fun deletePlant(plant: Plant) {
         viewModelScope.launch(Dispatchers.IO) {
             plantPictureRepository.deletePlantPicture(plant)
         }
     }
-
-    var openDeleteDialog by mutableStateOf(false)
-    var openTextFieldDialog by mutableStateOf(false)
-
-    var selectedFilter by mutableIntStateOf(0)
-
 }

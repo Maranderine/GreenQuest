@@ -46,16 +46,17 @@ class ChallengeViewModel@Inject constructor(
     init {
         viewModelScope.launch {
            dailyChallengeRepository.getActiveChallengesStream().transform {
+               // show only challenges that belong to the same day aka DAILY
                 if (it.all { value -> val t = today; value.date == today }) {
 
                     emit(it)
                 } else {
                     emit(emptyList<DailyChallenge>())
-
-                    //emit(emptyList<LocalChallengeEntity>())
                 }
             }.collect{
                 challenges -> _challengeList.value = challenges
+
+               // set count of finished challenges and  count of active challenges
                 if(challenges.isNotEmpty()){
                     _progress.value = challenges.sumOf { c -> c.progress }
                     _requiredCount.value = challenges.sumOf { c -> c.requiredCount }
@@ -72,19 +73,31 @@ class ChallengeViewModel@Inject constructor(
         }
     }
 
+    /**
+     * delete daily Challenge from active daily challenge database
+     */
     suspend fun delete(challenge: DailyChallenge){
         dailyChallengeRepository.deleteActiveChallenge(challenge)
     }
 
+    /**
+     * clear all -> delete all challenges from active daily challenge database
+     */
     suspend fun clearChallenges(){
         dailyChallengeRepository.clearAllActiveChallenges()
     }
 
 
+    /**
+     * update
+     */
     suspend fun updateChallenge(challenge: DailyChallenge){
         dailyChallengeRepository.updateActiveChallenge(challenge)
     }
 
+    /**
+     * load new randomly selected batch of daily Challenges
+     */
     suspend fun refreshChallenges(){
         clearChallenges()
         val newChallengeSelection = dailyChallengeRepository.getNewRandomlyPickedListOfActiveChallenges(4)

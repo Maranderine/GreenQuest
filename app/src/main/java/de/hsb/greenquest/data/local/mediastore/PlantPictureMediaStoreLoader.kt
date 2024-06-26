@@ -17,6 +17,10 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
+/**
+ * responsible for loading and saving images that belong to a portfolio entry
+ * Images are stored as jpg in the mediastore.
+ */
 class PlantPictureMediaStoreLoader @Inject constructor(
     private val applicationContext: Context
 )/*: PlantPictureRepository*/ {
@@ -25,12 +29,15 @@ class PlantPictureMediaStoreLoader @Inject constructor(
     val plantPicturesFlow: StateFlow<MutableList<Plant>> = _plantPicturesFlow
 
     init {
+
+        //reloading images if the content of the gallery changes
         val contentObserver = object : ContentObserver(Handler(Looper.getMainLooper())) {
             override fun onChange(selfChange: Boolean) {
                 loadPicturesFromMediaStore()
             }
         }
 
+        //observe content in gallery
         applicationContext.contentResolver.registerContentObserver(
             MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
             true,
@@ -41,14 +48,13 @@ class PlantPictureMediaStoreLoader @Inject constructor(
         loadPicturesFromMediaStore()
     }
 
-    /*override*/ suspend fun savePlantPicture(plant: Plant) {
-        // TODO: Implement save functionality
-    }
-
-    /*override*/ fun getAllPlantPictures(): Flow<MutableList<Plant>> {
+    fun getAllPlantPictures(): Flow<MutableList<Plant>> {
         return plantPicturesFlow
     }
 
+    /**
+     * deletes Image in the gallery based on the plant data object it belongs to
+     */
     fun deletePlantPicture(plant: Plant) {
         val contentResolver = applicationContext.contentResolver
 
@@ -57,6 +63,7 @@ class PlantPictureMediaStoreLoader @Inject constructor(
         }
     }
 
+    // TODO used?
     fun deletePicture(uri: Uri) {
         val contentResolver = applicationContext.contentResolver
 
@@ -64,6 +71,9 @@ class PlantPictureMediaStoreLoader @Inject constructor(
 
     }
 
+    /**
+     * loads images from mediastore...duh
+     */
     private fun loadPicturesFromMediaStore() {
         val context = applicationContext
         val contentResolver = context.contentResolver

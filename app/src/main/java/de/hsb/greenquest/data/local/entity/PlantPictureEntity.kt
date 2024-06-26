@@ -10,9 +10,7 @@ import androidx.room.util.TableInfo
 import de.hsb.greenquest.data.local.utils.DataBaseConstants.COMMON_NAME_TABLE
 import de.hsb.greenquest.data.local.utils.DataBaseConstants.PLANT_PICTURE_TABLE
 
-//@Entity(tableName = PLANT_PICTURE_TABLE,
-//    indices = { TableInfo.Index(value = {"name"}, unique = true) })
-
+// TODO explanation
 @Entity(
     tableName = PLANT_PICTURE_TABLE,
     indices = [Index(value = ["name"], unique = true)]

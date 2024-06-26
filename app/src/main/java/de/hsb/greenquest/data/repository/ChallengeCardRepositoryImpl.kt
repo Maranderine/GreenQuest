@@ -3,7 +3,7 @@ package de.hsb.greenquest.data.repository
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseApp
 import com.google.firebase.firestore.firestore
-import de.hsb.greenquest.data.local.ChallengeCardImageInternalStorageLoader
+import de.hsb.greenquest.data.local.InternalStorage.ChallengeCardImageInternalStorageLoader
 import de.hsb.greenquest.data.local.dao.ChallengeCardDao
 import de.hsb.greenquest.data.local.entity.ChallengeCardEntity
 import de.hsb.greenquest.data.network.ChallengeCardDataSource
@@ -15,6 +15,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.transform
 import javax.inject.Inject
 
+/**
+ * class that handles complex buisness logic concerning the challengeCards
+ */
 class ChallengeCardRepositoryImpl @Inject constructor(
     private val firebaseApp: FirebaseApp?,
     private val challengeCardDao: ChallengeCardDao, //for personal active challenge
@@ -25,7 +28,11 @@ class ChallengeCardRepositoryImpl @Inject constructor(
 
     private val db = Firebase.firestore
 
+    /**
+     * loads a random new challenge Card
+     */
     override suspend fun loadNewChallengeCard(): challengeCard?{
+
         //download online data
         val cardsData = challengeCardDataSource.getChallengeCards()
         if(cardsData.isNotEmpty()){
@@ -39,6 +46,7 @@ class ChallengeCardRepositoryImpl @Inject constructor(
                 val img =
                     challengeCardPicturesDataSource.downloadImageFromStorage(cardData!!["imagePath"].toString())
                 return img?.let {
+
                     //save image locally
                     val path = challengeCardImageLoader.saveToInternalStorage(img)
                     val challenge: ChallengeCardEntity = ChallengeCardEntity(
@@ -48,8 +56,8 @@ class ChallengeCardRepositoryImpl @Inject constructor(
                         location = cardData["location"].toString(),
                         hint = cardData["hint"].toString()
                     )
+
                     //save new created card locally
-                    //challengeCardDao.insert(challenge)
                     challengeCardDao.insertInto(
                         challenge.id,
                         challenge.name,
@@ -66,15 +74,30 @@ class ChallengeCardRepositoryImpl @Inject constructor(
         return null
     }
 
+    /**
+     * removes card if challenge card was finished or deleted
+     */
     override suspend fun removeChallengeFromActive(challenge: challengeCard) {
         challengeCardDao.delete(challenge.id)
     }
 
+    /**
+     * creates a new challenge card based on a plant
+     * uploads the data to the Cloud firestore
+     * uploads the image to the Cloud storage
+     */
     override suspend fun createNewChallengeCard(plant: Plant, imagePath: String, location: String, hint: String){
         val imgPathInStorage = challengeCardPicturesDataSource.uploadImageToStorage(imagePath)
         challengeCardDataSource.saveChallengeCardData(imagePath = imgPathInStorage, name = plant.name, hint = hint, location = location)
     }
 
+    /**
+     * util function to quickly map card Entity to a card data model
+     *
+     * @param ChallengeCardEntity database entity of a locally saved, active challenge card
+     * @param String path to the respective image
+     * @return challenge Card data Model
+     */
     override fun mapEntitiesToModel(challengeCardEntity: ChallengeCardEntity, imgPath: String): challengeCard{
         return challengeCard(
             id = challengeCardEntity.id,
@@ -85,13 +108,19 @@ class ChallengeCardRepositoryImpl @Inject constructor(
         )
     }
 
-    override fun getActiveChallengeCards(): Flow<List<challengeCard>> {
+    /**
+     * returns all active challenge cards as a Stream
+     */
+    override fun getActiveChallengeCardsDataStream(): Flow<List<challengeCard>> {
         return challengeCardDao.getChallengeCardsDataStream().transform {
             emit(it.map { c -> c.toChallengeCard() })
         }
     }
 
-    override suspend fun getAvailableChallengeCardsData(): List<ChallengeCardEntity>{
+    /**
+     * returns all active challenge cards
+     */
+    override suspend fun getActiveChallengeCardsData(): List<ChallengeCardEntity>{
         return challengeCardDao.getChallengeCardsData()
     }
 }

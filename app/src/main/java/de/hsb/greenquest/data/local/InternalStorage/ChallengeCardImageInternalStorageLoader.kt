@@ -1,11 +1,10 @@
-package de.hsb.greenquest.data.local
+package de.hsb.greenquest.data.local.InternalStorage
 
 import android.content.Context
 import android.content.ContextWrapper
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
-import android.os.Environment
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -13,12 +12,20 @@ import java.util.UUID
 import javax.inject.Inject
 
 
+/**
+ * Saves and that belong to donwloaded, therefore active challenge Cards
+ * images are saved in the android internal storage as a bitmap
+ */
 class ChallengeCardImageInternalStorageLoader @Inject constructor(
     private val applicationContext: Context
 ) {
 
+    /**
+     * saves images
+     * @param File Image to be saved
+     * @return absolute Path of the saved image
+     */
     fun saveToInternalStorage(image: File): String{
-        //create bitmap from temp file
         val bmOptions = BitmapFactory.Options()
         var bitmapImage = BitmapFactory.decodeFile(image.absolutePath, bmOptions)
 

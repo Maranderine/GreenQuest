@@ -8,7 +8,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import de.hsb.greenquest.data.local.ChallengeCardImageInternalStorageLoader
+import de.hsb.greenquest.data.local.InternalStorage.ChallengeCardImageInternalStorageLoader
 import de.hsb.greenquest.data.local.ChallengeDatabase
 import de.hsb.greenquest.data.local.dao.ActiveDailyChallengeDao
 import de.hsb.greenquest.data.local.dao.ChallengeCardDao
@@ -31,7 +31,6 @@ import de.hsb.greenquest.domain.repository.DailyChallengeRepository
 import de.hsb.greenquest.domain.repository.PlantNetRepository
 import de.hsb.greenquest.domain.repository.PlantPictureRepository
 import de.hsb.greenquest.domain.usecase.TakePictureUseCase
-import javax.annotation.Nullable
 import javax.inject.Singleton
 
 @Module
@@ -141,7 +140,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideChallengeCardImageLoader(@ApplicationContext context: Context): ChallengeCardImageInternalStorageLoader{
+    fun provideChallengeCardImageLoader(@ApplicationContext context: Context): ChallengeCardImageInternalStorageLoader {
         return ChallengeCardImageInternalStorageLoader(context)
     }
     @Provides

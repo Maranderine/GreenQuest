@@ -48,7 +48,6 @@ class DailyChallengeRepositoryImpl@Inject constructor(
     /**
      * Deletes all items from activeChallenges Database
      */
-    //TODO clear not working?
     override suspend fun clearAllActiveChallenges() {
         try {
             activeDailyChallengeDao.clearAll()

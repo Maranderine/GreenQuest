@@ -72,8 +72,13 @@ fun SearchCardsScreen(navController: NavController) {
     val loading: Boolean = portfolioViewModel.loading.collectAsState().value
     val points = portfolioViewModel.points.collectAsState().value
     val error by portfolioViewModel.error.collectAsState()
+    val sizeC = cards.size
+
+    val openDialog = portfolioViewModel.openDialog.collectAsState()
+    val dialogText = portfolioViewModel.DialogText.collectAsState()
 
     LaunchedEffect(error) {
+        // error triggering toast when all online available challenges are already loaded
         error?.let {
             Toast.makeText(context, it, Toast.LENGTH_LONG).show()
             portfolioViewModel.resetError()
@@ -89,6 +94,9 @@ fun SearchCardsScreen(navController: NavController) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
+
+
+        //Toggle between daily challenges and cards
         Row(
             Modifier
                 .fillMaxWidth(),
@@ -102,13 +110,16 @@ fun SearchCardsScreen(navController: NavController) {
             }
 
         }
-        val sizeC = cards.size
+        //user score display
         Text(text = "points: $points", color= Color.White)
+
+        //challenge cards
         Spacer(modifier = Modifier.size(40.dp))
         Box(modifier = Modifier.height(300.dp)){
             if(loading){
                 Text(text = "Loading...", color = Color.White)
             }else{
+                // last card in list is placeholder for loading new cards
                 if(currIdx == cards.size){
                     Image(
                         modifier = Modifier.size(300.dp),
@@ -117,10 +128,10 @@ fun SearchCardsScreen(navController: NavController) {
                         contentDescription = "1"
                     )
                 }else{
+                    // else show card of current list index
                     Image(
                         modifier = Modifier.size(300.dp),
                         painter = rememberAsyncImagePainter(cards[currIdx].imgPath),
-                        //painter  = painterResource(R.drawable.baseline_check_24),
                         contentScale = ContentScale.FillWidth,
                         contentDescription = "1"
                     )
@@ -128,12 +139,16 @@ fun SearchCardsScreen(navController: NavController) {
             }
         }
         Spacer(modifier = Modifier.size(20.dp))
+
+        //Buttons
         Row(
             Modifier
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.Top
         ) {
+
+            // move left
             Box(
 
                 modifier = Modifier,
@@ -155,9 +170,12 @@ fun SearchCardsScreen(navController: NavController) {
                     alpha = if(currIdx == 0) 0.2F else 1.0F
                 )
             }
-            if(currIdx == cards.size) {
-                Box(
 
+            // buttons if on last placeholder card
+            if(currIdx == cards.size) {
+
+                //refresh
+                Box(
                     modifier = Modifier,
                     contentAlignment = Alignment.Center,
                 ) {
@@ -174,6 +192,8 @@ fun SearchCardsScreen(navController: NavController) {
                         contentDescription = "1"
                     )
                 }
+
+                // deactivated hint button
                 Box(
 
                     modifier = Modifier,
@@ -193,7 +213,11 @@ fun SearchCardsScreen(navController: NavController) {
 
                     )
                 }
+
             }else{
+             // Buttons if normal challenge card is selected
+
+                // delete
                 Box(
 
                     modifier = Modifier,
@@ -212,6 +236,8 @@ fun SearchCardsScreen(navController: NavController) {
                         contentDescription = "1"
                     )
                 }
+
+                // hint button
                 Box(
 
                     modifier = Modifier,
@@ -234,8 +260,9 @@ fun SearchCardsScreen(navController: NavController) {
                     )
                 }
             }
-            Box(
 
+            // move right
+            Box(
                 modifier = Modifier,
                 contentAlignment = Alignment.TopCenter,
             ) {
@@ -259,13 +286,11 @@ fun SearchCardsScreen(navController: NavController) {
 
         Spacer(modifier = Modifier.size(40.dp))
 
+        // current list index display eg 1/2
         val idx = if( currIdx >= cards.size) "-" else (currIdx+1).toString()
         Text(text = "$idx / $sizeC", color= Color.White)
 
-
-        val openDialog = portfolioViewModel.openDialog.collectAsState()
-        val dialogText = portfolioViewModel.DialogText.collectAsState()
-
+        // hint dialog when hint button is clicked
         if (openDialog.value) {
             var hint = cards[currIdx].hint
 
@@ -287,9 +312,6 @@ fun SearchCardsScreen(navController: NavController) {
                     )
                 }
             }
-
-            //TODO endless loading when all challenge cards loaded
-
         }
     }
 }

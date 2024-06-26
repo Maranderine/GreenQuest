@@ -13,7 +13,7 @@ import org.json.JSONObject
 import java.io.File
 import java.io.IOException
 
-
+// Todo delete?
 class PlantApiUseCase {
     private val client = OkHttpClient()
     private val PROJECT = "all"
