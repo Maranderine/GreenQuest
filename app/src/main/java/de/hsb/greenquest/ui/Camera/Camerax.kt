@@ -331,7 +331,7 @@ private fun displayImage(imageView: ImageView, filePath: String) {
         // You might want to display a placeholder image or show an error message here
     }
 }
-private fun rotateBitmap(bitmap: Bitmap, degrees: Float): Bitmap {
+ fun rotateBitmap(bitmap: Bitmap, degrees: Float): Bitmap {
     val matrix = Matrix().apply { postRotate(degrees) }
     return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
 }

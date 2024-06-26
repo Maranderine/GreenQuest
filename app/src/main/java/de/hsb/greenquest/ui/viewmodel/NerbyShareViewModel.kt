@@ -43,6 +43,7 @@ import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
 import kotlin.random.Random
+import de.hsb.greenquest.ui.Camera.rotateBitmap
 
 
 @HiltViewModel
@@ -145,9 +146,10 @@ class NearbyViewModel @Inject constructor(
                             Log.d(TAG, "Received last chunk of stream from $endpointId")
 
                             val imageBytes = outputStream.toByteArray()
-                            val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+                            var bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
 
                             if (bitmap != null) {
+                                bitmap = rotateBitmap(bitmap,90f)
                                 _receivedImageBitmap.value = bitmap.asImageBitmap() // Convert Bitmap to ImageBitmap
                                 Log.d(TAG, "Successfully decoded bitmap from $endpointId")
                                 Log.d(TAG, "BITMAPPPPP PP P PP P PP P P PP  $bitmap")
@@ -284,7 +286,7 @@ class NearbyViewModel @Inject constructor(
 
                 val bitmap2 = BitmapFactory.decodeStream(inputStream)
                 val byteArrayoutputStream = ByteArrayOutputStream()
-                bitmap2.compress(Bitmap.CompressFormat.JPEG, 0, byteArrayoutputStream) // Use higher quality
+                bitmap2.compress(Bitmap.CompressFormat.JPEG, 15, byteArrayoutputStream) // Use higher quality
 
                 val byteArrayOutputStreamByteArray = byteArrayoutputStream.toByteArray()
                 val byteArrayInputStream = ByteArrayInputStream(byteArrayOutputStreamByteArray) // Single InputStream instance

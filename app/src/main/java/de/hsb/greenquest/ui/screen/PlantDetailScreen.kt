@@ -36,6 +36,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -70,9 +71,16 @@ fun PlantDetailScreen(navController: NavController, name: String?) {
     val nearbyViewModel = hiltViewModel<NearbyViewModel>()
     val context = LocalContext.current
 
+
     val plants = portfolioViewModel.plantListFlow.collectAsState()
     val plant = plants.value.find { it.name == name }
 
+
+    LaunchedEffect(nearbyViewModel.status.value) {
+        if (nearbyViewModel.status.value == "Advertising..."){
+            Toast.makeText( context,nearbyViewModel.status.value,Toast.LENGTH_SHORT).show()
+        }
+    }
     Column(
         modifier = Modifier
             .padding(MaterialTheme.spacing.small)
@@ -98,8 +106,6 @@ fun PlantDetailScreen(navController: NavController, name: String?) {
 
             IconButton(
                 onClick = {
-                    Toast.makeText( context,nearbyViewModel.status.value,Toast.LENGTH_SHORT).show()
-
                     nearbyViewModel.startAdvertising(plant)
                 },
             ) {

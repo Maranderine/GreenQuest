@@ -52,16 +52,18 @@ fun NearbyConnectionScreen(viewModel: NearbyViewModel = hiltViewModel<NearbyView
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.BottomEnd
         ) {
+            Column{
                 Text("Discovered Endpoints:")
                 for (endpoint in endpoints) {
                     Text(endpoint)
                 }
-            Spacer(modifier = Modifier.height(16.dp))
+
             Button(
                 onClick = { viewModel.disconnect() },
-                modifier = Modifier.padding(32.dp)
+                modifier = Modifier.padding(16.dp)
             ) {
                 Text("Disconnect")
+            }
             }
         }
     }
