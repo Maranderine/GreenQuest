@@ -21,20 +21,36 @@ import android.app.Application
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.net.Uri
 import android.util.Log
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import de.hsb.greenquest.data.local.mediastore.PlantPictureMediaStoreLoader
 import de.hsb.greenquest.domain.model.Plant
+import de.hsb.greenquest.domain.repository.PlantPictureRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
+import kotlin.random.Random
+import de.hsb.greenquest.ui.screen.rotateBitmap
 
 
 @HiltViewModel
 class NearbyViewModel @Inject constructor(
-    application: Application
+    application: Application,
+    plantPictureMediaStoreLoader: PlantPictureMediaStoreLoader,
+    plantPictureRepository: PlantPictureRepository
 ) : AndroidViewModel(application) {
 
     private val TAG = "NearbyViewModel"
@@ -58,6 +74,20 @@ class NearbyViewModel @Inject constructor(
     private var currentEndpointId: String? = null
     private var advertisingStarted = false
     private var discoveringStarted = false
+
+    private var debugMessage by mutableStateOf("")
+
+    fun resetState() {
+        _status.value = "Idle"
+        _endpoints.value = listOf()
+        _receivedDebugMessage.value = ""
+        _receivedImageBitmap.value = null
+        messageToSend = null
+        currentEndpointId = null
+        advertisingStarted = false
+        discoveringStarted = false
+        debugMessage = ""
+    }
 
     private val connectionLifecycleCallback = object : ConnectionLifecycleCallback() {
         override fun onConnectionInitiated(endpointId: String, connectionInfo: ConnectionInfo) {
@@ -90,10 +120,13 @@ class NearbyViewModel @Inject constructor(
 
     private val payloadCallback = object : PayloadCallback() {
         override fun onPayloadReceived(endpointId: String, payload: Payload) {
+            //var debugMessage: String by mutableStateOf("")
             if (payload.type == Payload.Type.BYTES) {
-                val debugMessage = String(payload.asBytes()!!)
+                debugMessage = String(payload.asBytes()!!)
                 _receivedDebugMessage.value = debugMessage
                 Log.d(TAG, "onPayloadReceived: Received payload from $endpointId: $debugMessage")
+                Log.d(TAG, debugMessage)
+                Log.d(TAG, createPlantFromString(debugMessage).toString())
             }
             if (payload.type == Payload.Type.STREAM) {
                 Log.d(TAG, "Received stream payload from $endpointId")
@@ -113,12 +146,27 @@ class NearbyViewModel @Inject constructor(
                             Log.d(TAG, "Received last chunk of stream from $endpointId")
 
                             val imageBytes = outputStream.toByteArray()
-                            val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+                            var bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
 
                             if (bitmap != null) {
+                                bitmap = rotateBitmap(bitmap,90f)
                                 _receivedImageBitmap.value = bitmap.asImageBitmap() // Convert Bitmap to ImageBitmap
                                 Log.d(TAG, "Successfully decoded bitmap from $endpointId")
                                 Log.d(TAG, "BITMAPPPPP PP P PP P PP P P PP  $bitmap")
+                                viewModelScope.launch(Dispatchers.IO) {
+
+                                    val tempPlant = createPlantFromString(debugMessage)
+                                    Log.d(TAG, "TEMP PLANT $tempPlant")
+
+                                    val uri = plantPictureMediaStoreLoader.savePlantPicture(tempPlant.name, bitmap)
+                                    Log.d(TAG, "URI $uri")
+
+                                    plantPictureRepository.savePlantPicture(
+                                        tempPlant.copy(imagePath = uri)
+                                    )
+                                }
+
+
                             } else {
                                 Log.e(TAG, "Failed to decode byte array into Bitmap")
                             }
@@ -238,7 +286,7 @@ class NearbyViewModel @Inject constructor(
 
                 val bitmap2 = BitmapFactory.decodeStream(inputStream)
                 val byteArrayoutputStream = ByteArrayOutputStream()
-                bitmap2.compress(Bitmap.CompressFormat.JPEG, 0, byteArrayoutputStream) // Use higher quality
+                bitmap2.compress(Bitmap.CompressFormat.JPEG, 15, byteArrayoutputStream) // Use higher quality
 
                 val byteArrayOutputStreamByteArray = byteArrayoutputStream.toByteArray()
                 val byteArrayInputStream = ByteArrayInputStream(byteArrayOutputStreamByteArray) // Single InputStream instance
@@ -257,5 +305,23 @@ class NearbyViewModel @Inject constructor(
         } catch (e: Exception) {
             Log.e("NearbyViewModel", "Exception occurred while sending image: ${e.message}", e)
         }
+    }
+
+    public fun createPlantFromString(input: String): Plant {
+        val nameRegex = "name=([^,]+)".toRegex()
+        val commonNamesRegex = "commonNames=\\[([^\\]]+)\\]".toRegex()
+        val speciesRegex = "species=([^,]+)".toRegex()
+        val descriptionRegex = "description=([^,]+)".toRegex()
+        val imagePathRegex = "imagePath=([^,]+)".toRegex()
+        val favoriteRegex = "favorite=([^\\)]+)".toRegex()
+
+        val name = nameRegex.find(input)?.groups?.get(1)?.value ?: ""
+        val commonNames = commonNamesRegex.find(input)?.groups?.get(1)?.value?.split(", ") ?: listOf()
+        val species = speciesRegex.find(input)?.groups?.get(1)?.value ?: ""
+        val description = descriptionRegex.find(input)?.groups?.get(1)?.value ?: ""
+        val imagePath = imagePathRegex.find(input)?.groups?.get(1)?.value?.let { Uri.parse(it) }
+        val favorite = favoriteRegex.find(input)?.groups?.get(1)?.value?.toBoolean() ?: false
+
+        return Plant(name, commonNames, species, description, imagePath, favorite)
     }
 }
