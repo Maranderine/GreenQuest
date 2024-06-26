@@ -2,18 +2,28 @@ package de.hsb.greenquest
 
 import NearbyConnectionScreen
 import android.Manifest
+import android.app.Application
+import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -24,13 +34,16 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -50,14 +63,23 @@ import de.hsb.greenquest.ui.theme.GreenQuestTheme
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
-
+    companion object {
+        private const val DENIAL_COUNT = "denial_count"
+    }
     private val requestPermissionsLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
         val allPermissionsGranted = permissions.all { it.value }
         if (allPermissionsGranted) {
             setCameraPreview()
+            println("fksjfkdjmgd")
         } else {
-            // Handle permission denial
+            val sharedPreferences = getSharedPreferences("de.hsb.greenquest", Context.MODE_PRIVATE)
+            val denialCount = sharedPreferences.getInt(DENIAL_COUNT, 0)
+            if (denialCount >= 2) {
+                openAppSettings()
+            } else {
+                sharedPreferences.edit().putInt(DENIAL_COUNT, denialCount + 1).apply()
+                recreate()
+            }
         }
     }
 
@@ -145,6 +167,12 @@ class MainActivity : ComponentActivity() {
 
             requestPermissionsLauncher.launch(permissionsToRequest.toTypedArray())
         }
+    }
+    private fun openAppSettings() {
+        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+            data = Uri.fromParts("package", packageName, null)
+        }
+        startActivity(intent)
     }
 
 

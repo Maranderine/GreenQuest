@@ -58,11 +58,13 @@ import de.hsb.greenquest.R
 import de.hsb.greenquest.domain.model.Plant
 import de.hsb.greenquest.ui.navigation.Screen
 import de.hsb.greenquest.ui.theme.spacing
+import de.hsb.greenquest.ui.viewmodel.NearbyViewModel
 import de.hsb.greenquest.ui.viewmodel.PortfolioViewModel
 
 @Composable
 fun PlantDetailScreen(navController: NavController, name: String?) {
     val portfolioViewModel = hiltViewModel<PortfolioViewModel>()
+    val nearbyViewModel = hiltViewModel<NearbyViewModel>()
 
     val plants = portfolioViewModel.plantListFlow.collectAsState()
     val plant = plants.value.find { it.name == name }
@@ -93,6 +95,7 @@ fun PlantDetailScreen(navController: NavController, name: String?) {
             IconButton(
                 onClick = {
                     //TODO enable Nearby Share
+                          nearbyViewModel.startAdvertising(plant)
                 },
             ) {
                 Icon(
