@@ -36,6 +36,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
@@ -64,7 +65,7 @@ fun PortfolioScreen(navController: NavController) {
 
         val plantList by portfolioViewModel.plantListFlow.collectAsStateWithLifecycle()
 
-        MyDropdownMenu(listOf("Recent", "Favorite"), portfolioViewModel)
+        MyDropdownMenu(listOf(stringResource(R.string.all), stringResource(R.string.favorite)), portfolioViewModel)
 
         Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
         LazyVerticalGrid(columns = GridCells.Adaptive(116.dp), content = {

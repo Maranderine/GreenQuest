@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">GreenQuest</string>
+    <string name="all">Alle</string>
+    <string name="favorite">Favoriten</string>
+    <string name="advertising">Anbieten...</string>
+    <string name="common_names">Gebräuchliche Namen: </string>
+    <string name="species">Art: </string>
+    <string name="add_button">Button hinzufügen</string>
+    <string name="edit_button">Button bearbeiten</string>
+    <string name="delete_plant">Pflanze löschen</string>
+    <string name="are_you_really_sure_that_you_want_to_delete_this_plant">Sind Sie wirklich sicher, dass Sie diese Pflanze löschen möchten?</string>
+    <string name="notes">Notizen</string>
+    <string name="start_discovery">Entdeckung starten</string>
+    <string name="disconnect_resetui">Trennen / UI zurücksetzen</string>
+    <string name="discovered_endpoints">Entdeckte Endpunkte:</string>
+    <string name="status">Status: %1$s</string>
+    <string name="received_image">Empfangenes Bild</string>
+    <string name="daily">täglich</string>
+    <string name="cards">karten</string>
+    <string name="points">Punkte: </string>
+    <string name="loading">Laden...</string>
+    <string name="no_hint_was_given">kein Hinweis gegeben</string>
+    <string name="capture_image">Bild aufnehmen</string>
+    <string name="try_again">Erneut versuchen</string>
+    <string name="confirm">Bestätigen</string>
+    <string name="give_us_a_moment_to_identify_the_plant">Geben Sie uns einen Moment, um die Pflanze zu identifizieren...</string>
+    <string name="congrats_you_ve_found_a">Glückwunsch, Sie haben eine %1$s gefunden!!</string>
+    <string name="add_to_portfolio">Zum Portfolio hinzufügen</string>
+    <string name="create_challenge_card">Karte erstellen</string>
+    <string name="optionally_give_a_hint">Optional: einen Hinweis geben</string>
+    <string name="portfolio">Portfolio</string>
+    <string name="plant_detail">Pflanzendetail</string>
+    <string name="camera">Kamera</string>
+    <string name="challenges">Aufgaben</string>
+    <string name="searchcards">Suchkarten</string>
+    <string name="nearbyshare">NearbyShare</string>
+    <string name="dismiss">Schließen</string>
+</resources>

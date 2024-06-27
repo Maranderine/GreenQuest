@@ -46,6 +46,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -56,6 +57,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import de.hsb.greenquest.R
 import de.hsb.greenquest.domain.model.Plant
 import de.hsb.greenquest.ui.navigation.Screen
 import de.hsb.greenquest.ui.viewmodel.CameraViewModel
@@ -141,7 +143,7 @@ fun CameraPreviewScreen(navController: NavController) {
                     }
                 }
             }) {
-                Text(text = "Capture Image")
+                Text(text = stringResource(R.string.capture_image))
             }
         } else if(isConfirmImage) {
             // Display the captured image and ask for confirmation
@@ -164,13 +166,13 @@ fun CameraPreviewScreen(navController: NavController) {
                         capturedImagePath = null
                         navController.navigate(Screen.CameraScreen.route)
                     }) {
-                        Text(text = "Try Again")
+                        Text(text = stringResource(R.string.try_again))
                     }
 
                     Button(onClick = {
                         isConfirmImage = false
                     }) {
-                        Text(text = "Confirm")
+                        Text(text = stringResource(R.string.confirm))
                     }
                 }
             }
@@ -193,8 +195,9 @@ fun CameraPreviewScreen(navController: NavController) {
                 )
 
                 // display identified plants name
-                var resString: String = "give us a moment to identify the plant..."
-                plant?.name?.let { resString = "congrats, you've found a $it !!" }
+                var resString: String =
+                    stringResource(R.string.give_us_a_moment_to_identify_the_plant)
+                plant?.name?.let { resString = stringResource(R.string.congrats_you_ve_found_a, it) }
                 Column(
                     modifier = Modifier.align(Alignment.BottomCenter)
                 ) {
@@ -219,7 +222,7 @@ fun CameraPreviewScreen(navController: NavController) {
                                 restoreState = true
                             }
                         }) {
-                            Text(text = "add to Portfolio")
+                            Text(text = stringResource(R.string.add_to_portfolio))
                         }
 
                         // create challenge card button
@@ -227,7 +230,7 @@ fun CameraPreviewScreen(navController: NavController) {
                             showDialog = true
                             cameraViewModel.plant = null
                         }) {
-                            Text(text = "create Challenge Card")
+                            Text(text = stringResource(R.string.create_challenge_card))
                         }
                     }
                     var text by remember { mutableStateOf("") }
@@ -255,7 +258,7 @@ fun CameraPreviewScreen(navController: NavController) {
                                     TextField(
                                         value = text,
                                         onValueChange = { text = it },
-                                        label = { Text("Optionally: give a hint") }
+                                        label = { Text(stringResource(R.string.optionally_give_a_hint)) }
                                     )
                                     Spacer(Modifier.size(20.dp))
                                     Button(onClick = {
@@ -263,7 +266,7 @@ fun CameraPreviewScreen(navController: NavController) {
                                         isCameraOpen = true
                                         cameraViewModel.createChallengeCard(imagePath, text)
                                     }) {
-                                        Text(text = "Confirm")
+                                        Text(text = stringResource(R.string.confirm))
                                     }
                                 }
                             }

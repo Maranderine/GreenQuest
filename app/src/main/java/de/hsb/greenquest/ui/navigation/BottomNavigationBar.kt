@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -38,23 +39,23 @@ data class BottomNavigationItem(
 fun BottomNavigationBar(navController: NavController) {
     val items = listOf(
         BottomNavigationItem(
-            title = Screen.CameraScreen.title,
+            title = Screen.CameraScreen.title.asString(),
             route = Screen.CameraScreen.route,
             icon = painterResource(id = R.drawable.kamera)
         ),
         BottomNavigationItem(
-            title = Screen.PortfolioScreen.title,
+            title = Screen.PortfolioScreen.title.asString(),
             route = Screen.PortfolioScreen.route,
             icon = painterResource(id = R.drawable.photo_album)
         ),
         BottomNavigationItem(
-            title = Screen.ChallengeScreen.title,
+            title = Screen.ChallengeScreen.title.asString(),
             route = Screen.ChallengeScreen.route,
             icon = painterResource(id = R.drawable.flash_card)
         ),
 
         BottomNavigationItem(
-            title = Screen.NearbyShareScreen.title,
+            title = Screen.NearbyShareScreen.title.asString(),
             route = Screen.NearbyShareScreen.route,
             icon = painterResource(id = R.drawable.conn)
         ),
@@ -86,7 +87,7 @@ fun BottomNavigationBar(navController: NavController) {
                     }
                 },
                 icon = {
-                    Image(item.icon, contentDescription = item.title, modifier =  if(item.title == Screen.NearbyShareScreen.title) Modifier.height(30.dp).width(30.dp) else Modifier)
+                    Image(item.icon, contentDescription = item.title, modifier =  if(item.title == Screen.NearbyShareScreen.title.asString()) Modifier.height(30.dp).width(30.dp) else Modifier)
                 },
                 label = {
                     Text(text = item.title)
