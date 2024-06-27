@@ -59,6 +59,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.window.Dialog
 
@@ -103,21 +104,21 @@ fun SearchCardsScreen(navController: NavController) {
             horizontalArrangement = Arrangement.SpaceBetween
         ){
             OutlinedButton(colors = ButtonDefaults.buttonColors(contentColor = Color.White), border= BorderStroke(width = 2.dp, color = Color(0xff67c6c0), ), onClick = { navController.navigate(Screen.ChallengeScreen.route) }) {
-                Text(text = "daily")
+                Text(text = stringResource(R.string.daily))
             }
             Button(colors = ButtonDefaults.buttonColors(containerColor = Color(0xff67c6c0)), onClick = { /*TODO*/ }) {
-                Text(text = "cards")
+                Text(text = stringResource(R.string.cards))
             }
 
         }
         //user score display
-        Text(text = "points: $points", color= Color.White)
+        Text(text = "${stringResource(R.string.points)} $points", color= Color.White)
 
         //challenge cards
         Spacer(modifier = Modifier.size(40.dp))
         Box(modifier = Modifier.height(300.dp)){
             if(loading){
-                Text(text = "Loading...", color = Color.White)
+                Text(text = stringResource(R.string.loading), color = Color.White)
             }else{
                 // last card in list is placeholder for loading new cards
                 if(currIdx == cards.size){
@@ -294,7 +295,7 @@ fun SearchCardsScreen(navController: NavController) {
         if (openDialog.value) {
             var hint = cards[currIdx].hint
 
-            hint =  if(hint == "") "no hint was given" else hint
+            hint =  if(hint == "") stringResource(R.string.no_hint_was_given) else hint
             Dialog(onDismissRequest = { portfolioViewModel.toggleDialog() }) {
                 Card(
                     modifier = Modifier

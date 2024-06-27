@@ -25,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -171,7 +172,9 @@ class MainActivity : ComponentActivity() {
                         .background(Color(0xFFB69DF8)), color = MaterialTheme.colorScheme.background
                 ) {
                     val navController = rememberNavController()
-                    var title by remember { mutableStateOf(Screen.CameraScreen.title) }
+                    val context = LocalContext.current
+                    var title by remember { mutableStateOf(Screen.CameraScreen.title.asString(context)) }
+
                     Scaffold(
                         topBar = {
                             GreenQuestTooAppBar(title = title, canNavigateBack = navController.previousBackStackEntry != null) {
@@ -188,30 +191,30 @@ class MainActivity : ComponentActivity() {
                         innerPadding ->
                         NavHost(navController = navController, startDestination = Screen.CameraScreen.route, Modifier.padding(innerPadding)) {
                             composable(route = Screen.PortfolioScreen.route) {
-                                title = Screen.PortfolioScreen.title
+                                title = Screen.PortfolioScreen.title.asString(context)
                                 PortfolioScreen(navController = navController)
                             }
                             composable(
                                 route = Screen.PlantDetailScreen.route + "/{plantName}",
                                 arguments = listOf(navArgument("plantName") { type = NavType.StringType })
                             ) {
-                                title = Screen.PlantDetailScreen.title
+                                title = Screen.PlantDetailScreen.title.asString(context)
                                 PlantDetailScreen(navController = navController, name = it.arguments?.getString("plantName"))
                             }
                             composable(route = Screen.CameraScreen.route) {
-                                title = Screen.CameraScreen.title
+                                title = Screen.CameraScreen.title.asString(context)
                                 CameraPreviewScreen(navController = navController)
                             }
                             composable(route = Screen.ChallengeScreen.route) {
-                                title = Screen.ChallengeScreen.title
+                                title = Screen.ChallengeScreen.title.asString(context)
                                 ChallengeScreen(navController = navController)
                             }
                             composable(route = Screen.SearchCardsScreen.route) {
-                                title = Screen.SearchCardsScreen.title
+                                title = Screen.SearchCardsScreen.title.asString(context)
                                 SearchCardsScreen(navController = navController)
                             }
                             composable(route = Screen.NearbyShareScreen.route) {
-                                title = Screen.NearbyShareScreen.title
+                                title = Screen.NearbyShareScreen.title.asString(context)
                                 NearbyConnectionScreen()
                             }
                         }
