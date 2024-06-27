@@ -110,6 +110,9 @@ fun ChallengeScreen(navController: NavController, modifier: Modifier = Modifier,
             Image(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
+                    .clickable { coroutineScope.launch {
+                        viewModel.refreshChallenges()
+                    }}
                     .size(200.dp)
                     .clip(CircleShape),
                 painter = painterResource(imageResource),
