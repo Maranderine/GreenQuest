@@ -11,9 +11,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberImagePainter
+import de.hsb.greenquest.R
 import de.hsb.greenquest.domain.model.Plant
 import de.hsb.greenquest.ui.viewmodel.NearbyViewModel
 
@@ -36,11 +38,11 @@ fun NearbyConnectionScreen(viewModel: NearbyViewModel = hiltViewModel<NearbyView
             .padding(32.dp)
             .verticalScroll(rememberScrollState())
     ) {
-        Text("Status: $status")
+        Text(stringResource(R.string.status, status))
 
         Spacer(modifier = Modifier.height(32.dp))
         Button(onClick = { viewModel.startDiscovery() }, modifier = Modifier.fillMaxSize()) {
-            Text("Start Discovery")
+            Text(stringResource(R.string.start_discovery))
         }
         Spacer(modifier = Modifier.height(16.dp))
         Text(viewModel.createPlantFromString(receivedDebugMessage).commonNames.toString())
@@ -53,7 +55,7 @@ fun NearbyConnectionScreen(viewModel: NearbyViewModel = hiltViewModel<NearbyView
             contentAlignment = Alignment.BottomEnd
         ) {
             Column{
-                Text("Discovered Endpoints:")
+                Text(stringResource(R.string.discovered_endpoints))
                 for (endpoint in endpoints) {
                     Text(endpoint)
                 }
@@ -63,7 +65,7 @@ fun NearbyConnectionScreen(viewModel: NearbyViewModel = hiltViewModel<NearbyView
                           viewModel.resetState()},
                 modifier = Modifier.padding(16.dp)
             ) {
-                Text("Disconnect / ResetUI")
+                Text(stringResource(R.string.disconnect_resetui))
             }
             }
         }
@@ -76,7 +78,7 @@ fun DisplayReceivedImage(imageBitmap: ImageBitmap) {
     ) {
         Image(
             bitmap = imageBitmap,
-            contentDescription = "Received Image",
+            contentDescription = stringResource(R.string.received_image),
             modifier = Modifier.fillMaxSize()
         )
     }

@@ -55,6 +55,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -81,7 +82,7 @@ fun PlantDetailScreen(navController: NavController, name: String?) {
 
 
     LaunchedEffect(nearbyViewModel.status.value) {
-        if (nearbyViewModel.status.value == "Advertising..."){
+        if (nearbyViewModel.status.value == context.getString(R.string.advertising)){
             Toast.makeText( context,nearbyViewModel.status.value,Toast.LENGTH_SHORT).show()
         }
     }
@@ -151,11 +152,11 @@ fun PlantDetailScreen(navController: NavController, name: String?) {
                 modifier = Modifier.align(Alignment.TopStart)
             ) {
                 Text(
-                    text = "Common Names: " + (plant?.commonNames.toString()  ?: ""),
+                    text = context.getString(R.string.common_names) + " " + (plant?.commonNames.toString()  ?: ""),
                 )
                 Spacer(modifier = Modifier.size(MaterialTheme.spacing.medium))
                 Text(
-                    text = "Species: " + (plant?.species  ?: "")
+                    text = context.getString(R.string.species) + " " + (plant?.species  ?: "")
                 )
                 Spacer(modifier = Modifier.size(MaterialTheme.spacing.medium))
                 Box(
@@ -172,13 +173,13 @@ fun PlantDetailScreen(navController: NavController, name: String?) {
                         if (plant?.description == "") {
                             Icon(
                                 imageVector = Icons.Filled.Add,
-                                contentDescription = "",
+                                contentDescription = stringResource(R.string.add_button),
                                 tint = MaterialTheme.colorScheme.primary,
                             )
                         }else {
                             Icon(
                                 imageVector = Icons.Filled.Edit ,
-                                contentDescription = "",
+                                contentDescription = stringResource(R.string.edit_button),
                                 tint = MaterialTheme.colorScheme.primary,
                             )
                         }
@@ -221,8 +222,8 @@ fun Dialogs(
                     portfolioViewModel.deletePlant(plant)
                     navController.navigate(Screen.PortfolioScreen.route)
                 },
-                dialogTitle = "Delete Plant",
-                dialogText = "Are you really sure that you want to delete this plant?",
+                dialogTitle = stringResource(R.string.delete_plant),
+                dialogText = stringResource(R.string.are_you_really_sure_that_you_want_to_delete_this_plant),
                 icon = Icons.Default.Warning
             )
         }
@@ -237,7 +238,7 @@ fun Dialogs(
                 onTextChange = {
                     textFieldText = it
                 },
-                labelText = "Notes",
+                labelText = stringResource(R.string.notes),
             )
         }
     }
@@ -271,7 +272,7 @@ fun AlertDialog(
                     onConfirmation()
                 }
             ) {
-                Text("Confirm")
+                Text(stringResource(R.string.confirm))
             }
         },
         dismissButton = {
@@ -280,7 +281,7 @@ fun AlertDialog(
                     onDismissRequest()
                 }
             ) {
-                Text("Dismiss")
+                Text(stringResource(R.string.dismiss))
             }
         }
     )

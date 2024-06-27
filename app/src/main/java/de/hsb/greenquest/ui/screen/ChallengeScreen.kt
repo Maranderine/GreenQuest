@@ -33,6 +33,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -97,14 +98,14 @@ fun ChallengeScreen(navController: NavController, modifier: Modifier = Modifier,
                 horizontalArrangement = Arrangement.SpaceBetween
             ){
                 Button(colors = ButtonDefaults.buttonColors(containerColor = Color(0xff67c6c0)), onClick = { /*TODO*/ }) {
-                    Text(text = "daily")
+                    Text(text = stringResource(R.string.daily))
                 }
                 OutlinedButton(colors = ButtonDefaults.buttonColors(contentColor = Color.White), border= BorderStroke(width = 2.dp, color = Color(0xff67c6c0), ), onClick = { navController.navigate(Screen.SearchCardsScreen.route) }) {
-                    Text(text = "cards")
+                    Text(text = stringResource(R.string.cards))
                 }
             }
             // user score
-            Text(text = "points: $points", color= Color.White)
+            Text(text = "${stringResource(R.string.points)} $points", color= Color.White)
 
             //plant illustration
             Image(
